@@ -2,8 +2,8 @@
 
 int main()
 {
-	FILE *out = fopen("untitled_0.025.smsh","w");
-	double h = 0.025, w = 1.0;
+	FILE *out = fopen("untitled_0.00625.smsh","w");
+	double h = 0.00625, w = 1.0;
 	int N = w/h+1;
 	fprintf(out, "%d\n", N*N);
 	for (int i=0; i<N; i++)

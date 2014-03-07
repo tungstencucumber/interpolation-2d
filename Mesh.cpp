@@ -76,19 +76,23 @@ int Mesh::init(double _h)
 		}
 	}*/
 	//load_msh_file("untitled_0.25.msh");
-	if (h == 0.01)
-		load_smsh_file("untitled_0.01.smsh");
+	if (h == 0.0125)
+		load_smsh_file("untitled_0.0125.smsh");
 	else if (h == 0.05)
 		load_smsh_file("untitled_0.05.smsh");
 	else if (h == 0.025)
 		load_smsh_file("untitled_0.025.smsh");
+	else if (h == 0.00625)
+		load_smsh_file("untitled_0.00625.smsh");
 	else return 1;
-	/*if (h == 0.01)
-		load_msh_file("untitled_0.01.msh");
+	/*if (h == 0.0125)
+		load_msh_file("untitled_0.0125.msh");
 	else if (h == 0.05)
 		load_msh_file("untitled_0.05.msh");
 	else if (h == 0.025)
 		load_msh_file("untitled_0.025.msh");
+	else if (h == 0.00625)
+		load_msh_file("untitled_0.00625.msh");
 	else return 1;*/
 	return 0;
 } //TODO: add filepath
@@ -468,7 +472,7 @@ void Mesh::setInitialConditionsGradient()
 			crd[ax] += h/2.0;
 			tP = findTriangle(crd);
 			gP = Method::interpolate_1_order(tP,crd,0,this);
-			crd[ax] -= h;
+			crd[ax] -= 1.0*h;
 			tM=findTriangle(crd);
 			gM = Method::interpolate_1_order(tM,crd,0,this);
 			nodes[i]->u[1+ax] = (gP-gM)/h;

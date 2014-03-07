@@ -497,10 +497,10 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 //	if (res != res) res = 0.0;
 	//if (diff_x > 0.0001 && diff_y > 0.0001)
 	//	printf("both axes failed %lf %lf\n",diff_x,diff_y);
-	if (d0 && d1 && d2)//(diff_x > 1.0 && diff_y > 1.0)//(res < minU || res > maxU)//res < minU-1.001)//(fabs(res) > fabs(10*(maxU+1))) 
+	//if (d0 && d1 && d2)//(diff_x > 1.0 && diff_y > 1.0)//(res < minU || res > maxU)//res < minU-1.001)//(fabs(res) > fabs(10*(maxU+1))) 
 	//if (res > 0.1)
-		printf(": res = %lf  res_0 = %lf  res_1 = %lf  res_2 = %lf   diff_0 = %lf  diff_1 = %lf  diff_2 = %lf\n"//%lf   u0 = %lf %lf %lf\nux = %lf %lf %lf\nuy = %lf %lf %lf\nf0 = %lf %lf %lf\nfx = %lf %lf %lf\nfy = %lf %lf %lf\nzn = %lf  vol = %lf\ncx = %lf %lf %lf \ncy = %lf %lf %lf \n\n",
-					,res, res_0,res_1, res_2, diff_0, diff_1,diff_2
+	//	printf(": res = %lf  res_0 = %lf  res_1 = %lf  res_2 = %lf   diff_0 = %lf  diff_1 = %lf  diff_2 = %lf\n"//%lf   u0 = %lf %lf %lf\nux = %lf %lf %lf\nuy = %lf %lf %lf\nf0 = %lf %lf %lf\nfx = %lf %lf %lf\nfy = %lf %lf %lf\nzn = %lf  vol = %lf\ncx = %lf %lf %lf \ncy = %lf %lf %lf \n\n",
+	//				,res, res_0,res_1, res_2, diff_0, diff_1,diff_2
 		//			nodes[0]->u[0],nodes[1]->u[0],nodes[2]->u[0],
 		//			nodes[0]->u[1],nodes[1]->u[1],nodes[2]->u[1],
 		//			nodes[0]->u[2],nodes[1]->u[2],nodes[2]->u[2],
@@ -513,9 +513,9 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		//		znam,x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2,
 				//x0,x1,x2,y0,y1,y2);
 		//		c[0],c[1],c[2],c[3],c[4],c[5]
-		);
+	//	);
 	
-	if (res!=res) res=0.0;
+//	if (res!=res) res=0.0;
 	return res;
 }
 
@@ -575,7 +575,7 @@ void Method::count(Mesh* mesh, Node* node, double timeStep, int ax)
 	calculateCoeff(a_r_coeff,node->axis); 	//transform coefficients into random axes basis
 
 		for (int i_crd=0; i_crd<2; i_crd++) //finding where characteristic for ax-th axis falls
-			coord_char[i_crd] = node->coords[i_crd] - a_r_coeff[ax]*node->axis[2*ax+i_crd]*timeStep;
+			coord_char[i_crd] = node->coords[i_crd] - 2.0*a_r_coeff[ax]*node->axis[2*ax+i_crd]*timeStep;
 		//printf("COUNT:   ts %lf   c0 %lf   c1 %lf   ax %d %lf %lf\n",timeStep,a_r_coeff[0],a_r_coeff[1],ax,node->axis[2*ax],node->axis[2*ax+1]);
 		//printf("COUNT:   ts %lf   nd: %lf %lf   cc: %lf %lf\n",timeStep,node->coords[0],node->coords[1],coord_char[0],coord_char[1]);
 	//printf("count node %d axis %d tri to find at %lf %lf\n",node->local_num, ax,node->axis[2*ax],node->axis[2*ax+1]);

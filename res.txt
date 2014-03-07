@@ -1,0 +1,16 @@
+h=0.05 order=1
+diff L0 = 0.878588		diff L1 = 0.032700		diff L2 = 0.094923
+h=0.025 order=1
+diff L0 = 0.776796		diff L1 = 0.025728		diff L2 = 0.069694
+ord  L0 = 1.634			ord  L1 = 1.835			ord  L2 = 1.967
+h=0.0125 order=1
+h=0.00625 order=1
+
+
+h=0.05 order=2
+diff L0 = 0.866149		diff L1 = 0.032204		diff L2 = 0.094062
+h=0.025 order=2
+diff L0 = 0.730071		diff L1 = 0.029875		diff L2 = 0.076782
+ord  L0 = 1.711			ord  L1 = 1.554			ord  L2 = 1.767
+h=0.0125 order=2
+h=0.00625 order=3
