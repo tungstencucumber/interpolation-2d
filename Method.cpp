@@ -218,9 +218,9 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		f0y=nodes[0]->vy,f1y=nodes[1]->vy,f2y=nodes[2]->vy; //solve for 4x4
 	double axes[4]={1.0,0.0,0.0,1.0},crd[2]={_crd[0],_crd[1]};
 	
-		double 	l01 = scalar(x0-x1,y0-y1,x0-x1,y0-y1),
-			l02 = scalar(x0-x2,y0-y2,x0-x2,y0-y2),
-			l12 = scalar(x2-x1,y2-y1,x2-x1,y2-y1),
+		double 	l01 = sqrt(scalar(x0-x1,y0-y1,x0-x1,y0-y1)),
+			l02 = sqrt(scalar(x0-x2,y0-y2,x0-x2,y0-y2)),
+			l12 = sqrt(scalar(x2-x1,y2-y1,x2-x1,y2-y1)),
 		//shift
 			mid[2] = {(x0+x1+x2)/3.0,(y0+y1+y2)/3.0};
 		x0 -= mid[0];		y0 -= mid[1];		
@@ -261,9 +261,9 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		intoRandomAxes(&f2,&f2y,axes);
 
 		//size
-		double norm = l01/10.0; 
-		double l22 = scalar(x2-(x0+x1)/2.0,y2-(y0+y1)/2.0,x2-(x0+x1)/2.0,y2-(y0+y1)/2.0);
-		double norm_y = l22/10.0;
+		double norm = l01/1.0; 
+		double l22 = sqrt(scalar(x2-(x0+x1)/2.0,y2-(y0+y1)/2.0,x2-(x0+x1)/2.0,y2-(y0+y1)/2.0));
+		double norm_y = l22/1.0;
 		x0 /= norm;		y0 /= norm_y;
 		x1 /= norm;		y1 /= norm_y;
 		x2 /= norm;		y2 /= norm_y;
@@ -340,9 +340,9 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		intoRandomAxes(&f2,&f2y,axes);
 
 		//size
-		double 	l11 = scalar(x1-(x0+x2)/2.0,y1-(y0+y2)/2.0,x1-(x0+x2)/2.0,y1-(y0+y2)/2.0);
-		norm_y = l11/10.0;
-		norm = l02/10.0; 
+		double 	l11 = sqrt(scalar(x1-(x0+x2)/2.0,y1-(y0+y2)/2.0,x1-(x0+x2)/2.0,y1-(y0+y2)/2.0));
+		norm_y = l11/1.0;
+		norm = l02/1.0; 
 		x0 /= norm;		y0 /= norm_y;
 		x1 /= norm;		y1 /= norm_y;
 		x2 /= norm;		y2 /= norm_y;
@@ -419,9 +419,9 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		intoRandomAxes(&f2,&f2y,axes);
 
 		//size
-		double 	l00 = scalar(x0-(x1+x2)/2.0,y0-(y1+y2)/2.0,x0-(x1+x2)/2.0,y0-(y1+y2)/2.0);
-		norm_y = l00/10.0;
-		norm = l12/10.0; 
+		double 	l00 = sqrt(scalar(x0-(x1+x2)/2.0,y0-(y1+y2)/2.0,x0-(x1+x2)/2.0,y0-(y1+y2)/2.0));
+		norm_y = l00/1.0;
+		norm = l12/1.0; 
 		x0 /= norm;		y0 /= norm_y;
 		x1 /= norm;		y1 /= norm_y;
 		x2 /= norm;		y2 /= norm_y;
@@ -471,15 +471,21 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 	if (res_2 > maxU) { diff_2 += res_2 - maxU; d2=1;};
 	
 	int n=0;
-	if (!d0) {res += res_0; n++;};
-	if (!d1) {res += res_1; n++;};
-	if (!d2) {res += res_2; n++;};
-	if (n) res /= n;
+//	if (!d0) {res = res_0; n++;};
+//	if (!d1) {res = res_1; n++;};
+//	if (!d2) {res = res_2; n++;};
+//	if (!d0 && !d1) {res = (res_0+res_1)/2.0; n++;}
+//	else if (!d1 && !d2) {res = (res_1+res_2)/2.0; n++;}
+//	else if (!d0 && !d2) {res = (res_0+res_2)/2.0; n++;}
+//	if (n) res /= n;
+//	else 
 	res = (res_0+res_1+res_2)/3.0;
 		//printf("Fall to 1st order\n");
 		//res = interpolate_1_order(t, _crd, 0, mesh);
 		res_gx = interpolate_1_order(t, _crd, 1, mesh);
 		res_gy = interpolate_1_order(t, _crd, 2, mesh);
+//	if (res < minU) res = minU;
+//	if (res > maxU) res = maxU;
 //	if (res!=res) res=0.0;
 	_res[0] = res;
 	_res[1] = res_gx;
@@ -497,10 +503,10 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 //	if (res != res) res = 0.0;
 	//if (diff_x > 0.0001 && diff_y > 0.0001)
 	//	printf("both axes failed %lf %lf\n",diff_x,diff_y);
-	//if (d0 && d1 && d2)//(diff_x > 1.0 && diff_y > 1.0)//(res < minU || res > maxU)//res < minU-1.001)//(fabs(res) > fabs(10*(maxU+1))) 
+//	if (d0 || d1 || d2)//(diff_x > 1.0 && diff_y > 1.0)//(res < minU || res > maxU)//res < minU-1.001)//(fabs(res) > fabs(10*(maxU+1))) 
 	//if (res > 0.1)
-	//	printf(": res = %lf  res_0 = %lf  res_1 = %lf  res_2 = %lf   diff_0 = %lf  diff_1 = %lf  diff_2 = %lf\n"//%lf   u0 = %lf %lf %lf\nux = %lf %lf %lf\nuy = %lf %lf %lf\nf0 = %lf %lf %lf\nfx = %lf %lf %lf\nfy = %lf %lf %lf\nzn = %lf  vol = %lf\ncx = %lf %lf %lf \ncy = %lf %lf %lf \n\n",
-	//				,res, res_0,res_1, res_2, diff_0, diff_1,diff_2
+//		printf(": res = %lf  res_0 = %lf  res_1 = %lf  res_2 = %lf   diff_0 = %lf  diff_1 = %lf  diff_2 = %lf\n"//%lf   u0 = %lf %lf %lf\nux = %lf %lf %lf\nuy = %lf %lf %lf\nf0 = %lf %lf %lf\nfx = %lf %lf %lf\nfy = %lf %lf %lf\nzn = %lf  vol = %lf\ncx = %lf %lf %lf \ncy = %lf %lf %lf \n\n",
+//					,res, res_0,res_1, res_2, diff_0, diff_1,diff_2
 		//			nodes[0]->u[0],nodes[1]->u[0],nodes[2]->u[0],
 		//			nodes[0]->u[1],nodes[1]->u[1],nodes[2]->u[1],
 		//			nodes[0]->u[2],nodes[1]->u[2],nodes[2]->u[2],
@@ -513,7 +519,7 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		//		znam,x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2,
 				//x0,x1,x2,y0,y1,y2);
 		//		c[0],c[1],c[2],c[3],c[4],c[5]
-	//	);
+//		);
 	
 //	if (res!=res) res=0.0;
 	return res;
@@ -575,12 +581,12 @@ void Method::count(Mesh* mesh, Node* node, double timeStep, int ax)
 	calculateCoeff(a_r_coeff,node->axis); 	//transform coefficients into random axes basis
 
 		for (int i_crd=0; i_crd<2; i_crd++) //finding where characteristic for ax-th axis falls
-			coord_char[i_crd] = node->coords[i_crd] - 2.0*a_r_coeff[ax]*node->axis[2*ax+i_crd]*timeStep;
+			coord_char[i_crd] = node->coords[i_crd] - a_r_coeff[ax]*node->axis[2*ax+i_crd]*timeStep;
 		//printf("COUNT:   ts %lf   c0 %lf   c1 %lf   ax %d %lf %lf\n",timeStep,a_r_coeff[0],a_r_coeff[1],ax,node->axis[2*ax],node->axis[2*ax+1]);
 		//printf("COUNT:   ts %lf   nd: %lf %lf   cc: %lf %lf\n",timeStep,node->coords[0],node->coords[1],coord_char[0],coord_char[1]);
 	//printf("count node %d axis %d tri to find at %lf %lf\n",node->local_num, ax,node->axis[2*ax],node->axis[2*ax+1]);
 	//printf("axes randomized with %lf %lf %lf %lf\n",node->axis[0],node->axis[1],node->axis[2],node->axis[3]);
-		t = mesh->findTriangle(coord_char);
+		t = mesh->findTriangle(coord_char,node);
 	//printf("count node %d axis %d tri found\n",node->local_num, ax);
 		if (!t) {printf("Fail! No thetr found for %lf %lf\n",coord_char[0],coord_char[1]); return;};
 		if (order == 1)

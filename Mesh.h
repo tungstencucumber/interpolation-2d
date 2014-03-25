@@ -14,7 +14,7 @@ public:
 	Node* getNode(int num);
 	Triangle* getTriangle(int num);
 	void transcend();
-	Triangle* findTriangle(double* _crd);
+	Triangle* findTriangle(double* _crd, Node* node);
 	int load_msh_file(char* file_name);
 	int load_smsh_file(char* file_name);
 	void addNode(Node* newNode);

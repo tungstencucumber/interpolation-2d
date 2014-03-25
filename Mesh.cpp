@@ -84,6 +84,10 @@ int Mesh::init(double _h)
 		load_smsh_file("untitled_0.025.smsh");
 	else if (h == 0.00625)
 		load_smsh_file("untitled_0.00625.smsh");
+	else if (h == 0.003125)
+		load_smsh_file("untitled_0.003125.smsh");
+	else if (h == 0.0015625)
+		load_smsh_file("untitled_0.0015625.smsh");
 	else return 1;
 	/*if (h == 0.0125)
 		load_msh_file("untitled_0.0125.msh");
@@ -93,6 +97,10 @@ int Mesh::init(double _h)
 		load_msh_file("untitled_0.025.msh");
 	else if (h == 0.00625)
 		load_msh_file("untitled_0.00625.msh");
+	else if (h == 0.003125)
+		load_msh_file("untitled_0.003125.msh");
+	else if (h == 0.0015625)
+		load_msh_file("untitled_0.0015625.msh");
 	else return 1;*/
 	return 0;
 } //TODO: add filepath
@@ -124,7 +132,7 @@ void Mesh::transcend()
 	}
 }
 
-Triangle* Mesh::findTriangle(double* _crd)
+Triangle* Mesh::findTriangle(double* _crd, Node* node)
 {
 	//border correction
 	while (_crd[0] < borders[0])
@@ -140,6 +148,13 @@ Triangle* Mesh::findTriangle(double* _crd)
 	//while (_crd[2] > borders[5])
 	//	_crd[2] -= borders[5] - borders[2];
 
+	for (int i=0; i<node->trianglesNum; i++)
+	{		
+		if (node->triangles[i]->check(_crd,this))
+		{
+				return node->triangles[i];			
+		}
+	}
 	for (int i=0; i<nt; i++)
 		if (triangles[i])
 			if (triangles[i]->check(_crd,this))
@@ -470,10 +485,10 @@ void Mesh::setInitialConditionsGradient()
 				continue;
 			}	
 			crd[ax] += h/2.0;
-			tP = findTriangle(crd);
+			tP = findTriangle(crd,nodes[i]);
 			gP = Method::interpolate_1_order(tP,crd,0,this);
 			crd[ax] -= 1.0*h;
-			tM=findTriangle(crd);
+			tM=findTriangle(crd,nodes[i]);
 			gM = Method::interpolate_1_order(tM,crd,0,this);
 			nodes[i]->u[1+ax] = (gP-gM)/h;
 			//printf("GRD: ax%d  u- %lf  u+ %lf  h %lf  grad %lf\n",ax,nodes[i]->u[0],gP,h,nodes[i]->u[1+ax]);
@@ -498,10 +513,10 @@ void Mesh::setInitialConditionsGradientSecond()
 				continue;
 			}	
 			crd[ax] += h/4.0;
-			tP = findTriangle(crd);
+			tP = findTriangle(crd,nodes[i]);
 			gP = Method::interpolate_1_order(tP,crd,ax,this);
 			crd[ax] -= h/2.0;
-			tM=findTriangle(crd);
+			tM=findTriangle(crd,nodes[i]);
 			gM = Method::interpolate_1_order(tM,crd,ax,this);
 			nodes[i]->u[3+ax] = 4.0*(gP-nodes[i]->u[ax])/h;
 		}

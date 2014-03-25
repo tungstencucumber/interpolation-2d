@@ -27,6 +27,12 @@ Triangle::Triangle(int* _v, Mesh* mesh)
 		if (aabb[3] < nodes[i]->coords[1])
 			aabb[3] = nodes[i]->coords[1];
 	}
+	nodes[0]->triangles[nodes[0]->trianglesNum] = this;
+	nodes[0]->trianglesNum++;
+	nodes[1]->triangles[nodes[1]->trianglesNum] = this;
+	nodes[1]->trianglesNum++;
+	nodes[2]->triangles[nodes[2]->trianglesNum] = this;
+	nodes[2]->trianglesNum++;
 }
 
 Triangle::~Triangle()
@@ -61,7 +67,7 @@ int Triangle::check(double* _crd, Mesh* mesh)
 		(_crd[1]-nodes[2]->coords[1])*axis[3])*
 	       ((nodes[0]->coords[0]-nodes[2]->coords[0])*axis[2]+
 		(nodes[0]->coords[1]-nodes[2]->coords[1])*axis[3])
-									<-0.0000001)
+									<-0.00000000001)
 	{
 		//printf ("%lf %lf %lf node 0\n%lf %lf %lf node 1\n%lf %lf %lf node 2\n%lf %lf %lf node 3\n%lf %lf %lf crd\n",nodes[0]->coords[0],nodes[0]->coords[1],nodes[0]->coords[2],nodes[1]->coords[0],nodes[1]->coords[1],nodes[1]->coords[2],nodes[2]->coords[0],nodes[2]->coords[1],nodes[2]->coords[2],nodes[3]->coords[0],nodes[3]->coords[1],nodes[3]->coords[2],_crd[0],_crd[1],_crd[2]);
 
@@ -89,7 +95,7 @@ int Triangle::check(double* _crd, Mesh* mesh)
 		(_crd[1]-nodes[2]->coords[1])*axis[3])*
 	       ((nodes[1]->coords[0]-nodes[2]->coords[0])*axis[2]+
 		(nodes[1]->coords[1]-nodes[2]->coords[1])*axis[3])
-									<-0.0000001)
+									<-0.00000000001)
 	{
 		//printf ("%lf %lf %lf node 0\n%lf %lf %lf node 1\n%lf %lf %lf node 2\n%lf %lf %lf node 3\n%lf %lf %lf crd\n",nodes[0]->coords[0],nodes[0]->coords[1],nodes[0]->coords[2],nodes[1]->coords[0],nodes[1]->coords[1],nodes[1]->coords[2],nodes[2]->coords[0],nodes[2]->coords[1],nodes[2]->coords[2],nodes[3]->coords[0],nodes[3]->coords[1],nodes[3]->coords[2],_crd[0],_crd[1],_crd[2]);
 
@@ -117,7 +123,7 @@ int Triangle::check(double* _crd, Mesh* mesh)
 		(_crd[1]-nodes[0]->coords[1])*axis[3])*
 	       ((nodes[2]->coords[0]-nodes[0]->coords[0])*axis[2]+
 		(nodes[2]->coords[1]-nodes[0]->coords[1])*axis[3])
-									<-0.0000001)
+									<-0.00000000001)
 	{
 		//printf ("%lf %lf %lf node 0\n%lf %lf %lf node 1\n%lf %lf %lf node 2\n%lf %lf %lf node 3\n%lf %lf %lf crd\n",nodes[0]->coords[0],nodes[0]->coords[1],nodes[0]->coords[2],nodes[1]->coords[0],nodes[1]->coords[1],nodes[1]->coords[2],nodes[2]->coords[0],nodes[2]->coords[1],nodes[2]->coords[2],nodes[3]->coords[0],nodes[3]->coords[1],nodes[3]->coords[2],_crd[0],_crd[1],_crd[2]);
 

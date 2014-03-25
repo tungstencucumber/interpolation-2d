@@ -13,7 +13,7 @@ int main()
 	}
 	for (int i=0; i<g->getFinalStep(); i++)
 	{
-		printf("Step %d started\n",i);
+		printf("Step %d started  ",i);
 		g->step(i);
 		//if (g.writeSnap(i))
 		//	sw.write();
