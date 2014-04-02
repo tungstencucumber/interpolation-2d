@@ -1,4 +1,4 @@
-	#include "Method.h"
+#include "Method.h"
 #include "Triangle.h"
 #include "Node.h"
 #include "Mesh.h"
@@ -135,10 +135,9 @@ double Method::interpolate_1_order(Triangle* t, double* _crd, int val, Mesh* mes
 	return a+_crd[0]*b+_crd[1]*c;//+_crd[2]*d;
 //	return 0.0;
 }
-double fsq(double* coeff_num, double* _crd)
+double fsq(double* a, double* c)
 {
-	return coeff_num[3]*_crd[0]*_crd[0] + coeff_num[4]*_crd[1]*_crd[1] + coeff_num[5]*_crd[0]*_crd[1] + 
-         		coeff_num[1]*_crd[0] + coeff_num[2]*_crd[1] + coeff_num[0];
+       return a[0]*c[0]*c[0]*c[0] + a[1]*c[1]*c[1]*c[1] + a[2]*c[1]*c[0]*c[0] + a[3]*c[1]*c[1]*c[0] + a[4]*c[0]*c[0] + a[5]*c[1]*c[1] + a[6]*c[0]*c[1] + a[7]*c[0] + a[8]*c[1] + a[9];
 }
 double fsq(double* coeff_num, double x, double y)
 {
@@ -146,9 +145,9 @@ double fsq(double* coeff_num, double x, double y)
 	return fsq(coeff_num,_x);
 }
 
-double fsqgx(double* coeff_num, double* _crd)
+double fsqgx(double* a, double* c)
 {
-	return 2.0*coeff_num[3]*_crd[0] + coeff_num[5]*_crd[1] + coeff_num[1];
+       return 3.0*a[0]*c[0]*c[0] + 2.0*a[2]*c[0]*c[1] + a[3]*c[1]*c[1] + 2.0*a[4]*c[0] + a[6]*c[1] + a[7];
 }
 double fsqgx(double* coeff_num, double x, double y)
 {
@@ -156,9 +155,9 @@ double fsqgx(double* coeff_num, double x, double y)
 	return fsqgx(coeff_num,_x);
 }
 
-double fsqgy(double* coeff_num, double* _crd)
+double fsqgy(double* a, double* c)
 {
-	return 2.0*coeff_num[4]*_crd[1] + coeff_num[5]*_crd[0] + coeff_num[2];
+       return 3.0*a[1]*c[1]*c[1] + a[2]*c[0]*c[0] + 2.0*a[3]*c[0]*c[1] + 2.0*a[5]*c[1] + a[6]*c[0] + a[8];
 }
 double fsqgy(double* coeff_num, double x, double y)
 {
@@ -183,12 +182,18 @@ void Method::intoRandomAxes(double* x, double* y, double *axes)
 			(*x)*axes[2]+(*y)*axes[3]};
 	*x=c[0];*y=c[1];
 }
+void Method::intoRandomAxesGrad(double* x, double* y, double *axes)
+{
+	double c[2]={	(*x)*axes[0]+(*y)*axes[2],
+			(*x)*axes[1]+(*y)*axes[3]};
+	*x=c[0];*y=c[1];
+}
 
 void Method::fromRandomAxes(double* c, double *a)
 {
 	double det = a[0]*a[3]-a[1]*a[2];
-	double axesR[4]={   a[3]/det, - a[1]/det,
-			   -a[2]/det,   a[0]/det};
+	double axesR[4]={ - a[1]/det,   a[0]/det,
+			    a[3]/det, - a[2]/det};
 	
 	intoRandomAxes(c,c+1,axesR);
 }
@@ -196,8 +201,8 @@ void Method::fromRandomAxes(double* c, double *a)
 void Method::fromRandomAxes(double* x, double* y, double *a)
 {
 	double det = a[0]*a[3]-a[1]*a[2];
-	double axesR[4]={   a[3]/det, - a[1]/det,
-			   -a[2]/det,   a[0]/det};
+	double axesR[4]={ - a[1]/det,   a[0]/det,
+			    a[3]/det, - a[2]/det};
 	
 	intoRandomAxes(x,y,axesR);
 }
@@ -205,252 +210,48 @@ void swap(double* x, double* y)
 {
 	double tmp=*x; *x=*y; *y=tmp; 
 }
-double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double* _res, Node* node)
+double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double* _res)//, Node* node)
 {	
-	Node* nodes[4] = {mesh->getNode(t->vert[0]), mesh->getNode(t->vert[1]), mesh->getNode(t->vert[2])};
+	double res = 0.0;
+	Node* nodes[3] = {mesh->getNode(t->vert[1]), mesh->getNode(t->vert[2]), mesh->getNode(t->vert[0])};
 	
-	double 	coeff_num[6]={0.0},c[6]={
-	 	nodes[0]->coords[0], nodes[1]->coords[0], nodes[2]->coords[0],
-       		nodes[0]->coords[1], nodes[1]->coords[1], nodes[2]->coords[1]};
-	double	x0=c[0], x1=c[1], x2=c[2], //
-       		y0=c[3], y1=c[4], y2=c[5];
-        double f0=nodes[0]->u[1],f1=nodes[1]->u[1],f2=nodes[2]->u[1],
-		f0y=nodes[0]->vy,f1y=nodes[1]->vy,f2y=nodes[2]->vy; //solve for 4x4
+	double 	coeff_num[10]={0.0};
+	double	x0=nodes[0]->coords[0], x1=nodes[1]->coords[0], x2=nodes[2]->coords[0], //
+       		y0=nodes[0]->coords[1], y1=nodes[1]->coords[1], y2=nodes[2]->coords[1];
+        double 	f0 =nodes[0]->u[0],f1 =nodes[1]->u[0],f2 =nodes[2]->u[0],
+		f0x=nodes[0]->u[1],f1x=nodes[1]->u[1],f2x=nodes[2]->u[1],
+		f0y=nodes[0]->u[2],f1y=nodes[1]->u[2],f2y=nodes[2]->u[2]; //solve for 4x4
 	double axes[4]={1.0,0.0,0.0,1.0},crd[2]={_crd[0],_crd[1]};
 	
-		double 	l01 = sqrt(scalar(x0-x1,y0-y1,x0-x1,y0-y1)),
-			l02 = sqrt(scalar(x0-x2,y0-y2,x0-x2,y0-y2)),
-			l12 = sqrt(scalar(x2-x1,y2-y1,x2-x1,y2-y1)),
 		//shift
-			mid[2] = {(x0+x1+x2)/3.0,(y0+y1+y2)/3.0};
+		double	mid[2] = {x0,y0};
 		x0 -= mid[0];		y0 -= mid[1];		
 		x1 -= mid[0];		y1 -= mid[1];
 		x2 -= mid[0];		y2 -= mid[1];
 		crd[0] -= mid[0];	crd[1] -= mid[1];
-				
 
-		//rotate
-		axes[2]=x2-(x0+x1)/2.0; axes[3]=y2-(y0+y1)/2.0; 
-//		axes[2]*=10000000.0;
-		double norma = sqrt(axes[2]*axes[2]+axes[3]*axes[3]);
-		axes[2]/=norma; axes[3]/=norma; 	
-		if (fabs(axes[2]) > 0.0)
-		{
-			axes[1] = 1.0;
-			axes[0] = -axes[3]/axes[2];
-		}
-		else if (fabs(axes[3]) > 0.0)
-		{
-			axes[0] = 1.0;
-			axes[1] = -axes[2]/axes[3];
-		}
-		else 
-		{
-			printf("Fail in determining axis direction");
-			return 0.0;
-		}
-		norma = sqrt(axes[0]*axes[0]+axes[1]*axes[1]);
-		axes[0]/=norma; axes[1]/=norma; 
-		swap(axes,axes+2);swap(axes+1,axes+3);
-		intoRandomAxes(&x0,&y0,axes);
-		intoRandomAxes(&x1,&y1,axes);
-		intoRandomAxes(&x2,&y2,axes);
-		intoRandomAxes(crd,crd+1,axes);
-		intoRandomAxes(&f0,&f0y,axes);
-		intoRandomAxes(&f1,&f1y,axes);
-		intoRandomAxes(&f2,&f2y,axes);
+		//to a simplex
+		axes[0] = x1; axes[1] = y1;
+		axes[2] = x2; axes[3] = y2;
+		fromRandomAxes(&x0,&y0,axes);
+		fromRandomAxes(&x1,&y1,axes);
+		fromRandomAxes(&x2,&y2,axes);
+		fromRandomAxes(crd,crd+1,axes);
+		intoRandomAxesGrad(&f0x,&f0y,axes);
+		intoRandomAxesGrad(&f1x,&f1y,axes);
+		intoRandomAxesGrad(&f2x,&f2y,axes);
 
-		//size
-		double norm = l01/1.0; 
-		double l22 = sqrt(scalar(x2-(x0+x1)/2.0,y2-(y0+y1)/2.0,x2-(x0+x1)/2.0,y2-(y0+y1)/2.0));
-		double norm_y = l22/1.0;
-		x0 /= norm;		y0 /= norm_y;
-		x1 /= norm;		y1 /= norm_y;
-		x2 /= norm;		y2 /= norm_y;
-		crd[0] /= norm;		crd[1] /= norm_y;
-		f0*=norm; f0y*=norm_y;
-		f1*=norm; f1y*=norm_y;
-		f2*=norm; f2y*=norm_y;
-	double znam = x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2;
-    	if (fabs(znam) < 0.00000001) 
-	{
-		printf("%10lf<- skipping by volume\n%10lf %10lf %10lf \n%10lf %10lf %10lf \n",znam, x0,x1,x2,y0,y1,y2); return 0.0;		
-	}
-        coeff_num[1] = 	(f2*x1*y0-f1*x2*y0-f2*x0*y1+f0*x2*y1+f1*x0*y2-f0*x1*y2)/znam;
-        coeff_num[3] = 	(y0*(f1-f2)+y1*(f2-f0)+y2*(f0-f1))/znam/2.0;
-        coeff_num[5] = 	-(f2*(x1-x0)+f1*(x0-x2)+f0*(x2-x1))/znam;
-        double 	f3=nodes[0]->u[0]-coeff_num[1]*x0-coeff_num[3]*x0*x0-coeff_num[5]*x0*y0,
-		f4=nodes[1]->u[0]-coeff_num[1]*x1-coeff_num[3]*x1*x1-coeff_num[5]*x1*y1,
-		f5=nodes[2]->u[0]-coeff_num[1]*x2-coeff_num[3]*x2*x2-coeff_num[5]*x2*y2; 
-	znam = (y0-y1)*(y0-y2)*(y1-y2);
-        coeff_num[0] = 	(f5*y0*(y0-y1)*y1+y2*(f3*y1*(y1-y2)+f4*y0*(y2-y0)))/znam;
-        coeff_num[2] = 	(f5*(y1+y0)*(y1-y0)+f4*(y0-y2)*(y0+y2)+f3*(y2-y1)*(y2+y1))/znam;
-        coeff_num[4] = 	(f5*(y0-y1)+f3*(y1-y2)+f4*(y2-y0))/znam;
+	coeff_num[9] = f0;
+	coeff_num[8] = f0y;
+	coeff_num[7] = f0x;
+	coeff_num[6] = 0.0;//f1y - coeff_num[8];
+	coeff_num[5] = 3.0*f2 - 2.0*coeff_num[8] - 3.0*coeff_num[9] - f2y;
+	coeff_num[4] = 3.0*f1 - 2.0*coeff_num[7] - 3.0*coeff_num[9] - f1x;
+	coeff_num[3] = f2x - coeff_num[7];//f2x - coeff_num[7];f2x - f1y + coeff_num[8] - coeff_num[7];//
+	coeff_num[2] = f1y - coeff_num[8];
+	coeff_num[1] = -2.0*f2 + coeff_num[8] + 2.0*coeff_num[9] + f2y;
+	coeff_num[0] = -2.0*f1 + coeff_num[7] + 2.0*coeff_num[9] + f1x;
 
-	double coeff_num_0[6]={coeff_num[0],coeff_num[1],coeff_num[2],coeff_num[3],coeff_num[4],coeff_num[5]};
-	double res_0 = fsq(coeff_num_0,crd),
-		res_gx_0 = fsqgx(coeff_num_0,crd),
-		res_gy_0 = fsqgy(coeff_num_0,crd);
-	res_gx_0 /= norm; res_gy_0 /= norm;
-	fromRandomAxes(&res_gx_0, &res_gy_0, axes);
-
-
-		x0=c[0], x1=c[1], x2=c[2], //
-       		y0=c[3], y1=c[4], y2=c[5];
-        f0=nodes[0]->u[1],f1=nodes[1]->u[1],f2=nodes[2]->u[1],
-		f0y=nodes[0]->vy,f1y=nodes[1]->vy,f2y=nodes[2]->vy; 
-	crd[0]=_crd[0]; crd[1]=_crd[1];
-	
-		//shift
-		x0 -= mid[0];		y0 -= mid[1];		
-		x1 -= mid[0];		y1 -= mid[1];
-		x2 -= mid[0];		y2 -= mid[1];
-		crd[0] -= mid[0];	crd[1] -= mid[1];
-				
-
-		//rotate
-		axes[2]=x1-(x0+x2)/2.0; axes[3]=y1-(y0+y2)/2.0; 
-//		axes[2]*=10000000.0;
-		norma = sqrt(axes[2]*axes[2]+axes[3]*axes[3]);
-		axes[2]/=norma; axes[3]/=norma; 	
-		if (fabs(axes[2]) > 0.0)
-		{
-			axes[1] = 1.0;
-			axes[0] = -axes[3]/axes[2];
-		}
-		else if (fabs(axes[3]) > 0.0)
-		{
-			axes[0] = 1.0;
-			axes[1] = -axes[2]/axes[3];
-		}
-		else 
-		{
-			printf("Fail in determining axis direction");
-			return 0.0;
-		}
-		norma = sqrt(axes[0]*axes[0]+axes[1]*axes[1]);
-		axes[0]/=norma; axes[1]/=norma; 
-		swap(axes,axes+2);swap(axes+1,axes+3);
-		intoRandomAxes(&x0,&y0,axes);
-		intoRandomAxes(&x1,&y1,axes);
-		intoRandomAxes(&x2,&y2,axes);
-		intoRandomAxes(crd,crd+1,axes);
-		intoRandomAxes(&f0,&f0y,axes);
-		intoRandomAxes(&f1,&f1y,axes);
-		intoRandomAxes(&f2,&f2y,axes);
-
-		//size
-		double 	l11 = sqrt(scalar(x1-(x0+x2)/2.0,y1-(y0+y2)/2.0,x1-(x0+x2)/2.0,y1-(y0+y2)/2.0));
-		norm_y = l11/1.0;
-		norm = l02/1.0; 
-		x0 /= norm;		y0 /= norm_y;
-		x1 /= norm;		y1 /= norm_y;
-		x2 /= norm;		y2 /= norm_y;
-		crd[0] /= norm;		crd[1] /= norm_y;
-		f0*=norm; f0y*=norm_y;
-		f1*=norm; f1y*=norm_y;
-		f2*=norm; f2y*=norm_y;
-	znam = x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2;
-    	if (fabs(znam) < 0.00000001) 
-	{
-		printf("%10lf<- skipping by volume\n%10lf %10lf %10lf \n%10lf %10lf %10lf \n",znam, x0,x1,x2,y0,y1,y2); return 0.0;		
-	}
-        coeff_num[1] = 	(f2*x1*y0-f1*x2*y0-f2*x0*y1+f0*x2*y1+f1*x0*y2-f0*x1*y2)/znam;
-        coeff_num[3] = 	(y0*(f1-f2)+y1*(f2-f0)+y2*(f0-f1))/znam/2.0;
-        coeff_num[5] = 	-(f2*(x1-x0)+f1*(x0-x2)+f0*(x2-x1))/znam;
-        f3=nodes[0]->u[0]-coeff_num[1]*x0-coeff_num[3]*x0*x0-coeff_num[5]*x0*y0,
-		f4=nodes[1]->u[0]-coeff_num[1]*x1-coeff_num[3]*x1*x1-coeff_num[5]*x1*y1,
-		f5=nodes[2]->u[0]-coeff_num[1]*x2-coeff_num[3]*x2*x2-coeff_num[5]*x2*y2; 
-	znam = (y0-y1)*(y0-y2)*(y1-y2);
-        coeff_num[0] = 	(f5*y0*(y0-y1)*y1+y2*(f3*y1*(y1-y2)+f4*y0*(y2-y0)))/znam;
-        coeff_num[2] = 	(f5*(y1+y0)*(y1-y0)+f4*(y0-y2)*(y0+y2)+f3*(y2-y1)*(y2+y1))/znam;
-        coeff_num[4] = 	(f5*(y0-y1)+f3*(y1-y2)+f4*(y2-y0))/znam;
-
-	double coeff_num_1[6]={coeff_num[0],coeff_num[1],coeff_num[2],coeff_num[3],coeff_num[4],coeff_num[5]};
-	double res_1 = fsq(coeff_num_1,crd),
-		res_gx_1 = fsqgx(coeff_num_1,crd),
-		res_gy_1 = fsqgy(coeff_num_1,crd);
-	res_gx_1 /= norm; res_gy_1 /= norm;
-	fromRandomAxes(&res_gx_1, &res_gy_1, axes);
-
-
-		x0=c[0], x1=c[1], x2=c[2], //
-       		y0=c[3], y1=c[4], y2=c[5];
-        f0=nodes[0]->u[1],f1=nodes[1]->u[1],f2=nodes[2]->u[1],
-		f0y=nodes[0]->vy,f1y=nodes[1]->vy,f2y=nodes[2]->vy; 
-	crd[0]=_crd[0]; crd[1]=_crd[1];
-	
-		//shift
-		x0 -= mid[0];		y0 -= mid[1];		
-		x1 -= mid[0];		y1 -= mid[1];
-		x2 -= mid[0];		y2 -= mid[1];
-		crd[0] -= mid[0];	crd[1] -= mid[1];
-				
-
-		//rotate
-		axes[2]=x0-(x2+x1)/2.0; axes[3]=y0-(y2+y1)/2.0;  
-//		axes[2]*=10000000.0;
-		norma = sqrt(axes[2]*axes[2]+axes[3]*axes[3]);
-		axes[2]/=norma; axes[3]/=norma; 	
-		if (fabs(axes[2]) > 0.0)
-		{
-			axes[1] = 1.0;
-			axes[0] = -axes[3]/axes[2];
-		}
-		else if (fabs(axes[3]) > 0.0)
-		{
-			axes[0] = 1.0;
-			axes[1] = -axes[2]/axes[3];
-		}
-		else 
-		{
-			printf("Fail in determining axis direction");
-			return 0.0;
-		}
-		norma = sqrt(axes[0]*axes[0]+axes[1]*axes[1]);
-		axes[0]/=norma; axes[1]/=norma; 
-		swap(axes,axes+2);swap(axes+1,axes+3);
-		intoRandomAxes(&x0,&y0,axes);
-		intoRandomAxes(&x1,&y1,axes);
-		intoRandomAxes(&x2,&y2,axes);
-		intoRandomAxes(crd,crd+1,axes);
-		intoRandomAxes(&f0,&f0y,axes);
-		intoRandomAxes(&f1,&f1y,axes);
-		intoRandomAxes(&f2,&f2y,axes);
-
-		//size
-		double 	l00 = sqrt(scalar(x0-(x1+x2)/2.0,y0-(y1+y2)/2.0,x0-(x1+x2)/2.0,y0-(y1+y2)/2.0));
-		norm_y = l00/1.0;
-		norm = l12/1.0; 
-		x0 /= norm;		y0 /= norm_y;
-		x1 /= norm;		y1 /= norm_y;
-		x2 /= norm;		y2 /= norm_y;
-		crd[0] /= norm;		crd[1] /= norm_y;
-		f0*=norm; f0y*=norm_y;
-		f1*=norm; f1y*=norm_y;
-		f2*=norm; f2y*=norm_y;
-	znam = x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2;
-    	if (fabs(znam) < 0.00000001) 
-	{
-		printf("%10lf<- skipping by volume\n%10lf %10lf %10lf \n%10lf %10lf %10lf \n",znam, x0,x1,x2,y0,y1,y2); return 0.0;		
-	}
-        coeff_num[1] = 	(f2*x1*y0-f1*x2*y0-f2*x0*y1+f0*x2*y1+f1*x0*y2-f0*x1*y2)/znam;
-        coeff_num[3] = 	(y0*(f1-f2)+y1*(f2-f0)+y2*(f0-f1))/znam/2.0;
-        coeff_num[5] = 	-(f2*(x1-x0)+f1*(x0-x2)+f0*(x2-x1))/znam;
-        f3=nodes[0]->u[0]-coeff_num[1]*x0-coeff_num[3]*x0*x0-coeff_num[5]*x0*y0,
-		f4=nodes[1]->u[0]-coeff_num[1]*x1-coeff_num[3]*x1*x1-coeff_num[5]*x1*y1,
-		f5=nodes[2]->u[0]-coeff_num[1]*x2-coeff_num[3]*x2*x2-coeff_num[5]*x2*y2; 
-	znam = (y0-y1)*(y0-y2)*(y1-y2);
-        coeff_num[0] = 	(f5*y0*(y0-y1)*y1+y2*(f3*y1*(y1-y2)+f4*y0*(y2-y0)))/znam;
-        coeff_num[2] = 	(f5*(y1+y0)*(y1-y0)+f4*(y0-y2)*(y0+y2)+f3*(y2-y1)*(y2+y1))/znam;
-        coeff_num[4] = 	(f5*(y0-y1)+f3*(y1-y2)+f4*(y2-y0))/znam;
-
-	double coeff_num_2[6]={coeff_num[0],coeff_num[1],coeff_num[2],coeff_num[3],coeff_num[4],coeff_num[5]};
-	double res_2 = fsq(coeff_num_2,crd),
-		res_gx_2 = fsqgx(coeff_num_2,crd),
-		res_gy_2 = fsqgy(coeff_num_2,crd);
-	res_gx_2 /= norm; res_gy_2 /= norm;
-	fromRandomAxes(&res_gx_2, &res_gy_2, axes);
 
 
 	double minU = nodes[0]->u[0], maxU = nodes[0]->u[0];
@@ -459,70 +260,16 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		if (nodes[i]->u[0] < minU) minU = nodes[i]->u[0];
 		if (nodes[i]->u[0] > maxU) maxU = nodes[i]->u[0];
 	}
+	
+//	printf(" f0: %lf   fx0: %lf   fy0: %lf\nnf0: %lf  nfx0: %lf  nfy0: %lf\n\n",
+//			f2,f2x,f2y,fsq(coeff_num,0,1),fsqgx(coeff_num,0,1),fsqgy(coeff_num,0,1));
+/*	printf(" f0: %lf   f1: %lf   f2: %lf  nf: %lf\n 0: %lf %lf   1: %lf %lf   2: %lf %lf  _crd: %lf %lf\nn0: %lf %lf  n1: %lf %lf  n2: %lf %lf  crd: %lf %lf\n\n",
+		f0,f1,f2,fsq(coeff_num,crd),
+		nodes[0]->coords[0], nodes[0]->coords[1],nodes[1]->coords[0], nodes[1]->coords[1],nodes[2]->coords[0], nodes[2]->coords[1], _crd[0], _crd[1],
+		x0,y0,x1,y1,x2,y2,crd[0],crd[1]
+		);*/
 
-	double res = 0.0, res_gx = (res_gx_0+res_gx_1+res_gx_2)/3.0, res_gy = (res_gy_0+res_gy_1+res_gy_2)/3.0;
-	double diff_0=0,diff_1=0,diff_2=0;	
-	int d0=0,d1=0,d2=0;
-	if (res_0 < minU) { diff_0 += minU - res_0; d0=-1;};
-	if (res_0 > maxU) { diff_0 += res_0 - maxU; d0=1;};
-	if (res_1 < minU) { diff_1 += minU - res_1; d1=-1;};
-	if (res_1 > maxU) { diff_1 += res_1 - maxU; d1=1;};
-	if (res_2 < minU) { diff_2 += minU - res_2; d2=-1;};
-	if (res_2 > maxU) { diff_2 += res_2 - maxU; d2=1;};
-	
-	int n=0;
-//	if (!d0) {res = res_0; n++;};
-//	if (!d1) {res = res_1; n++;};
-//	if (!d2) {res = res_2; n++;};
-//	if (!d0 && !d1) {res = (res_0+res_1)/2.0; n++;}
-//	else if (!d1 && !d2) {res = (res_1+res_2)/2.0; n++;}
-//	else if (!d0 && !d2) {res = (res_0+res_2)/2.0; n++;}
-//	if (n) res /= n;
-//	else 
-	res = (res_0+res_1+res_2)/3.0;
-		//printf("Fall to 1st order\n");
-		//res = interpolate_1_order(t, _crd, 0, mesh);
-		res_gx = interpolate_1_order(t, _crd, 1, mesh);
-		res_gy = interpolate_1_order(t, _crd, 2, mesh);
-//	if (res < minU) res = minU;
-//	if (res > maxU) res = maxU;
-//	if (res!=res) res=0.0;
-	_res[0] = res;
-	_res[1] = res_gx;
-	_res[2] = res_gy;
-	node->axis_method[0] = axes[0];
-	node->axis_method[1] = axes[1];
-	node->axis_method[2] = axes[2];
-	node->axis_method[3] = axes[3];
-	//res = fsq(coeff_num,crd);
-//res = (res_x + res_y)/2.0;
-	
-//	if (diff_x < diff_y)
-//		res = res_x;
-//	else res = res_y;
-//	if (res != res) res = 0.0;
-	//if (diff_x > 0.0001 && diff_y > 0.0001)
-	//	printf("both axes failed %lf %lf\n",diff_x,diff_y);
-//	if (d0 || d1 || d2)//(diff_x > 1.0 && diff_y > 1.0)//(res < minU || res > maxU)//res < minU-1.001)//(fabs(res) > fabs(10*(maxU+1))) 
-	//if (res > 0.1)
-//		printf(": res = %lf  res_0 = %lf  res_1 = %lf  res_2 = %lf   diff_0 = %lf  diff_1 = %lf  diff_2 = %lf\n"//%lf   u0 = %lf %lf %lf\nux = %lf %lf %lf\nuy = %lf %lf %lf\nf0 = %lf %lf %lf\nfx = %lf %lf %lf\nfy = %lf %lf %lf\nzn = %lf  vol = %lf\ncx = %lf %lf %lf \ncy = %lf %lf %lf \n\n",
-//					,res, res_0,res_1, res_2, diff_0, diff_1,diff_2
-		//			nodes[0]->u[0],nodes[1]->u[0],nodes[2]->u[0],
-		//			nodes[0]->u[1],nodes[1]->u[1],nodes[2]->u[1],
-		//			nodes[0]->u[2],nodes[1]->u[2],nodes[2]->u[2],
-					//f0,f1,f2,f0y,f1y,f2y,
-		//			fsq(coeff_num,x0,y0),fsq(coeff_num,x1,y1),fsq(coeff_num,x2,y2),
-		//			f0,f1,f2,f0y,f1y,f2y,
-					//fsqgx(coeff_num,x0,y0),fsqgx(coeff_num,x1,y1),fsqgx(coeff_num,x2,y2),
-					//fsqgy(coeff_num,x0,y0),fsqgy(coeff_num,x1,y1),fsqgy(coeff_num,x2,y2),
-				//coeff_num[0],coeff_num[1],coeff_num[2],coeff_num[3],coeff_num[4],coeff_num[5], 
-		//		znam,x1*y0 - x2*y0 - x0*y1 + x2*y1 + x0*y2 - x1*y2,
-				//x0,x1,x2,y0,y1,y2);
-		//		c[0],c[1],c[2],c[3],c[4],c[5]
-//		);
-	
-//	if (res!=res) res=0.0;
-	return res;
+	return fsq(coeff_num,crd);
 }
 
 /*double fcb(double* a, double* c)
@@ -597,12 +344,14 @@ void Method::count(Mesh* mesh, Node* node, double timeStep, int ax)
 		}
 		else if (order == 2)
 		{
-			double res[3]={0.0};
+//			double res[3]={0.0};
 //			nextValues[0] = 
-			interpolate_2_order(t, coord_char, mesh, res, next); 
-			nextValues[0] = res[0];
-			nextValues[1] = res[1];
-			nextValues[2] = res[2];
+			nextValues[1] = interpolate_1_order(t, coord_char, 1, mesh); 
+			nextValues[2] = interpolate_1_order(t, coord_char, 2, mesh);
+			nextValues[0] = interpolate_2_order(t, coord_char, mesh, NULL);//, next); 
+//			nextValues[0] = res[0];
+//			nextValues[1] = res[1];
+//			nextValues[2] = res[2];
 		}
 		else if (order == 3)
 			nextValues[0] = interpolate_3_order(t, coord_char, mesh); 

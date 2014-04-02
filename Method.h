@@ -16,7 +16,7 @@ public:
 	static double scalar(double* _v1, double* _v2);
 	static double scalar(double _x0, double _y0, double _x1, double _y1);
 	static double interpolate_1_order(Triangle* t, double* _crd, int val, Mesh* mesh); 
-	static double interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double* _res, Node* node); 
+	static double interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double* _res);//, Node* node); 
 	static double interpolate_3_order(Triangle* t, double* _crd, Mesh* mesh); 
 private:
 	//static double axis[4]; 	// current local randomised axis
@@ -30,7 +30,10 @@ private:
 	//static void intoRandomAxes(double* c);
 	static void intoRandomAxes(double* x, double* y, double *axes);
 	static void fromRandomAxes(double* x, double* y, double *a);
+//	static void fromRandomAxesGrad(double* x, double* y, double *a);
 	static void intoRandomAxes(double* c, double *axes);
+	static void intoRandomAxesGrad(double* x, double* y, double *axes);
+//	static void intoRandomAxesGrad(double* c, double *axes);
 	static void fromRandomAxes(double* c, double *axes);
 };
 #endif

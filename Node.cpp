@@ -66,10 +66,11 @@ void Node::setValues(double* _v)
 void Node::randomizeAxis()
 {
 	for (int i=0; i<4; i++)
-		axis[i]= 0.0;//sqrt(2.0)/2.0;
-	//axis[3] = -sqrt(2.0)/2.0;
+		axis[i]= sqrt(2.0)/2.0;//0.0;//
+//	axis[3] = -sqrt(2.0)/2.0;
+	axis[1] = axis[2] = 0.0; 
 	axis[3] = axis[0] = 1.0; 
-	return;
+//	return;
 	axis[0] = (0.98 * (rand()%R_I)/R_D + 0.01) * (2.0*(rand()%2) - 1.0);
 	axis[1] = (0.98 * (rand()%R_I)/R_D + 0.01) * (2.0*(rand()%2) - 1.0);
 	double norma = sqrt(scalar(axis,axis));
@@ -97,6 +98,7 @@ void Node::randomizeAxis()
 	//check!!!!!
 	double check[3] = {scalar(axis,axis),scalar(axis+2,axis+2)
 			,scalar(axis,axis+2)};
+	//	printf ("axis random %.20lf %.20lf %.20lf\n",check[0],check[1],check[2]);
 	if ((check[0] - 1.0)*(check[0] - 1.0) > 0.0001 || (check[1] - 1.0)*(check[1] - 1.0) > 0.0001 || check[2]*check[2] > 0.0001)
 	{
 		printf ("Warning! Recursion in axis random called! %lf %lf %lf   %lf %lf %lf %lf\n",check[0],check[1],check[2], axis[0], axis[1], axis[2], axis[3]);

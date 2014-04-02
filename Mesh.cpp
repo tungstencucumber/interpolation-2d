@@ -155,6 +155,7 @@ Triangle* Mesh::findTriangle(double* _crd, Node* node)
 				return node->triangles[i];			
 		}
 	}
+//	printf("!!!Not found triangle in the neighbourhood crd: %lf %lf  node: %lf %lf\n",_crd[0],_crd[1],node->coords[0],node->coords[1]);
 	for (int i=0; i<nt; i++)
 		if (triangles[i])
 			if (triangles[i]->check(_crd,this))

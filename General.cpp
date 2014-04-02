@@ -27,10 +27,10 @@ int General::init()
 	finalStep = 100;
 	time = 0;
 	//timeStep = 0.001;
-	snapStep = 50;			//TODO:load parameters from file
+	snapStep = 10;			//TODO:load parameters from file
 	double courant = 0.1;		//lambda*tau/h
-//	double h = 0.00625;
-	double h = 0.003125;
+	double h = 0.025;
+//	double h = 0.003125;
 	double min_c = c1;
 	if (c0<c1) min_c = c0;
 	timeStep = courant*h/min_c;//0.003125;//
@@ -38,7 +38,7 @@ int General::init()
 		{if (mesh->init(h)) return 1;} 		//TODO: add filepath
 	else return 1;
 	if (method = new Method())
-		{if (method->init(c0,c1, 1)) return 1;}		//TODO: when added different methods, must be chosen from xml
+		{if (method->init(c0,c1, 2)) return 1;}		//TODO: when added different methods, must be chosen from xml
 	else return 1;
 	if (sw = new VTKSnapshotWriter())
 		{if (sw->init()) return 1;}		//TODO: when added different methods, must be chosen from xml
@@ -74,7 +74,7 @@ int General::step(int currentStep)
 		for (int i=0; i<mesh->getNodesNum(); i++)
 		{
 			Node* n = mesh->getNode(i);
-			method->count(mesh, n, timeStep, axis);//axis);
+			method->count(mesh, n, timeStep, axis);
 		}
 		mesh->transcend();
 		//printf("counted axis %d\n",axis);
