@@ -67,10 +67,10 @@ void Node::randomizeAxis()
 {
 	for (int i=0; i<4; i++)
 		axis[i]= sqrt(2.0)/2.0;//0.0;//
-//	axis[3] = -sqrt(2.0)/2.0;
+	axis[3] = -sqrt(2.0)/2.0;
 	axis[1] = axis[2] = 0.0; 
 	axis[3] = axis[0] = 1.0; 
-//	return;
+	return;
 	axis[0] = (0.98 * (rand()%R_I)/R_D + 0.01) * (2.0*(rand()%2) - 1.0);
 	axis[1] = (0.98 * (rand()%R_I)/R_D + 0.01) * (2.0*(rand()%2) - 1.0);
 	double norma = sqrt(scalar(axis,axis));

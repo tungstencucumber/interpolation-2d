@@ -76,7 +76,7 @@ int Mesh::init(double _h)
 		}
 	}*/
 	//load_msh_file("untitled_0.25.msh");
-	if (h == 0.0125)
+/*	if (h == 0.0125)
 		load_smsh_file("untitled_0.0125.smsh");
 	else if (h == 0.05)
 		load_smsh_file("untitled_0.05.smsh");
@@ -88,8 +88,8 @@ int Mesh::init(double _h)
 		load_smsh_file("untitled_0.003125.smsh");
 	else if (h == 0.0015625)
 		load_smsh_file("untitled_0.0015625.smsh");
-	else return 1;
-	/*if (h == 0.0125)
+	else return 1; */
+	if (h == 0.0125)
 		load_msh_file("untitled_0.0125.msh");
 	else if (h == 0.05)
 		load_msh_file("untitled_0.05.msh");
@@ -101,8 +101,8 @@ int Mesh::init(double _h)
 		load_msh_file("untitled_0.003125.msh");
 	else if (h == 0.0015625)
 		load_msh_file("untitled_0.0015625.msh");
-	else return 1;*/
-	return 0;
+	else return 1;
+	return 0; 
 } //TODO: add filepath
 
 //int Mesh::getNodesNum()

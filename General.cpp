@@ -24,7 +24,7 @@ General::~General()
 
 int General::init()
 {
-	finalStep = 100;
+	finalStep = 1000;
 	time = 0;
 	//timeStep = 0.001;
 	snapStep = 10;			//TODO:load parameters from file
@@ -33,7 +33,7 @@ int General::init()
 //	double h = 0.003125;
 	double min_c = c1;
 	if (c0<c1) min_c = c0;
-	timeStep = courant*h/min_c;//0.003125;//
+	timeStep = courant*h;///min_c;//0.003125;//
 	if (mesh = new Mesh())
 		{if (mesh->init(h)) return 1;} 		//TODO: add filepath
 	else return 1;
@@ -68,7 +68,7 @@ int General::step(int currentStep)
 		Node* n = mesh->getNode(i);
 		n->randomizeAxis();
 	}
-	for (int axis=0; axis<2; axis++)
+	for (int axis=0; axis<1; axis++)
 	{
 		//printf("counting axis %d\n",axis);
 		for (int i=0; i<mesh->getNodesNum(); i++)
