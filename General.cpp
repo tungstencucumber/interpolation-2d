@@ -5,7 +5,7 @@
 #include "VTKSnapshotWriter.h"
 #include <math.h>
 #define c0 1.0
-#define c1 1.0
+#define c1 2.0
 #define amp 10.0
 #define wdt 0.45
 #define PI 3.1415926
@@ -24,12 +24,12 @@ General::~General()
 
 int General::init()
 {
-	finalStep = 1000;
+	finalStep = 200;
 	time = 0;
 	//timeStep = 0.001;
-	snapStep = 10;			//TODO:load parameters from file
-	double courant = 0.1;		//lambda*tau/h
-	double h = 0.025;
+	snapStep = 50;			//TODO:load parameters from file
+	double courant = 0.5;		//lambda*tau/h
+	double h = 0.0125;
 //	double h = 0.003125;
 	double min_c = c1;
 	if (c0<c1) min_c = c0;
@@ -68,7 +68,7 @@ int General::step(int currentStep)
 		Node* n = mesh->getNode(i);
 		n->randomizeAxis();
 	}
-	for (int axis=0; axis<1; axis++)
+	for (int axis=0; axis<2; axis++)
 	{
 		//printf("counting axis %d\n",axis);
 		for (int i=0; i<mesh->getNodesNum(); i++)

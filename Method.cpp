@@ -111,19 +111,29 @@ double Method::interpolate_1_order(Triangle* t, double* _crd, int val, Mesh* mes
 }
 double fsq(double* a, double* c)
 {
-//	return a[0] + a[1]*c[0] + a[2]*c[1] + a[3]*c[0]*c[1] + a[4]*c[0]*c[0] + a[5]*c[1]*c[1] + a[6]*c[0]*c[0]*c[1]+ a[7]*c[0]*c[1]*c[1]  +a[8]*c[0]*c[0]*c[0] + a[9]*c[1]*c[1]*c[1];
 	return a[0] + a[1]*c[0] + a[2]*c[1] + a[3]*c[0]*c[1] + a[4]*c[0]*c[0] + a[5]*c[1]*c[1];
+}
+double fcb(double* a, double* c)
+{
+	return a[0] + a[1]*c[0] + a[2]*c[1] + a[3]*c[0]*c[1] + a[4]*c[0]*c[0] + a[5]*c[1]*c[1] + a[6]*c[0]*c[0]*c[1]+ a[7]*c[0]*c[1]*c[1]  +a[8]*c[0]*c[0]*c[0] + a[9]*c[1]*c[1]*c[1];
 }
 double fsq(double* coeff_num, double x, double y)
 {
 	double _x[2]={x,y};
 	return fsq(coeff_num,_x);
 }
-
+double fcb(double* coeff_num, double x, double y)
+{
+	double _x[2]={x,y};
+	return fcb(coeff_num,_x);
+}
 double fsqgx(double* a, double* c)
 {
-//	return a[1] + a[3]*c[1] + 2.0*a[4]*c[0] + 2.0*a[6]*c[0]*c[1] + a[7]*c[1]*c[1] + 3.0*a[8]*c[0]*c[0];
 	return a[1] + a[3]*c[1] + 2.0*a[4]*c[0];
+}
+double fcbgx(double* a, double* c)
+{
+	return a[1] + a[3]*c[1] + 2.0*a[4]*c[0] + 2.0*a[6]*c[0]*c[1] + a[7]*c[1]*c[1] + 3.0*a[8]*c[0]*c[0];
 }
 double fsqgx(double* coeff_num, double x, double y)
 {
@@ -131,15 +141,29 @@ double fsqgx(double* coeff_num, double x, double y)
 	return fsqgx(coeff_num,_x);
 }
 
+double fcbgx(double* coeff_num, double x, double y)
+{
+	double _x[2]={x,y};
+	return fcbgx(coeff_num,_x);
+}
 double fsqgy(double* a, double* c)
 {
-//	return a[2] + a[3]*c[0] + 2.0*a[5]*c[1] + a[6]*c[0]*c[0] + 2.0*a[7]*c[0]*c[1] + 3.0*a[9]*c[0]*c[0];
 	return a[2] + a[3]*c[0] + 2.0*a[5]*c[1];
 }
+double fcbgy(double* a, double* c)
+{
+	return a[2] + a[3]*c[0] + 2.0*a[5]*c[1] + a[6]*c[0]*c[0] + 2.0*a[7]*c[0]*c[1] + 3.0*a[9]*c[0]*c[0];
+}
+
 double fsqgy(double* coeff_num, double x, double y)
 {
 	double _x[2]={x,y};
 	return fsqgy(coeff_num,_x);
+}
+double fcbgy(double* coeff_num, double x, double y)
+{
+	double _x[2]={x,y};
+	return fcbgy(coeff_num,_x);
 }
 
 void Method::intoRandomAxes(double* x, double* y, double *axes)
@@ -177,7 +201,7 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 {	
 	Node* nodes[3] = {mesh->getNode(t->vert[0]), mesh->getNode(t->vert[1]), mesh->getNode(t->vert[2])};
 	//no simplex, grads by OA, OB, OC
-	double 	coeff_num[10]={0.0};
+/*	double 	coeff_num[10]={0.0};
 	double	x0=nodes[0]->coords[0], x1=nodes[1]->coords[0], x2=nodes[2]->coords[0], x = _crd[0], 
        		y0=nodes[0]->coords[1], y1=nodes[1]->coords[1], y2=nodes[2]->coords[1], y = _crd[1];
         double 	f0 =nodes[0]->u[0],f1 =nodes[1]->u[0],f2 =nodes[2]->u[0],
@@ -197,7 +221,7 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 	coeff_num[2] = ;
 	coeff_num[3] = ;
 	coeff_num[4] = ;
-	coeff_num[5] = ;
+	coeff_num[5] = ; */
 
 	//no simplex, two lines
 /*	double	xA=nodes[0]->coords[0], xB=nodes[1]->coords[0], xC=nodes[2]->coords[0], 
@@ -239,9 +263,9 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 	double	tt = 0;
 	if (fabs(xM-xB) > eps) tt = (x0 - xB)/(xM - xB);
 	else tt = (y0 - yB)/(yM - yB);
-	return a[0] + a[1]*tt + a[2]*tt*tt + a[3]*tt*tt*tt;
-*/
-/*	
+	return a[0] + a[1]*tt + a[2]*tt*tt + a[3]*tt*tt*tt;*/
+
+
 	//to a simplex
 	double 	coeff_num[10]={0.0};
 	double	x0=nodes[0]->coords[0], x1=nodes[1]->coords[0], x2=nodes[2]->coords[0], 
@@ -268,9 +292,94 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 	intoRandomAxesGrad(&f0x,&f0y,axes);
 	intoRandomAxesGrad(&f1x,&f1y,axes);
 	intoRandomAxesGrad(&f2x,&f2y,axes);
+//----------------quad (0x, 1x, 2x) polynom coeffs
+	double	x = crd[0], y = crd[1];
+	if (x == 0)
+	{
+		coeff_num[0] = f0;
+		coeff_num[1] = f0y;
+		coeff_num[2] = 3*f2 - 3*f0 - 2*f0y - f2y;
+		coeff_num[3] = f2y + f0y - 2*f2 + 2*f0;
+		return coeff_num[0] + coeff_num[1]*y + coeff_num[2]*y*y + coeff_num[3]*y*y*y;
+	}
+	if (y == 0)
+	{
+		coeff_num[0] = f0;
+		coeff_num[1] = f0x;
+		coeff_num[2] = 3*f1 - 3*f0 - 2*f0x - f1x;
+		coeff_num[3] = f1x + f0x - 2*f1 + 2*f0;
+		return coeff_num[0] + coeff_num[1]*x + coeff_num[2]*x*x + coeff_num[3]*x*x*x;
+	}
+	if (x + y - 1 == 0)
+	{
+		Node* nodes[3] = {mesh->getNode(t->vert[2]), mesh->getNode(t->vert[0]), mesh->getNode(t->vert[1])};
+		//to a simplex
+		double 	coeff_num[10]={0.0};
+		double	x0=nodes[0]->coords[0], x1=nodes[1]->coords[0], x2=nodes[2]->coords[0], 
+	       		y0=nodes[0]->coords[1], y1=nodes[1]->coords[1], y2=nodes[2]->coords[1];
+		double 	f0 =nodes[0]->u[0],f1 =nodes[1]->u[0],f2 =nodes[2]->u[0],
+			f0x=nodes[0]->u[1],f1x=nodes[1]->u[1],f2x=nodes[2]->u[1],
+			f0y=nodes[0]->u[2],f1y=nodes[1]->u[2],f2y=nodes[2]->u[2];
+
+		double axes[4]={1.0,0.0,0.0,1.0},crd[2]={_crd[0],_crd[1]};
+	
+			//shift
+		double	mid[2] = {x0,y0};
+		x0 -= mid[0];		y0 -= mid[1];		
+		x1 -= mid[0];		y1 -= mid[1];
+		x2 -= mid[0];		y2 -= mid[1];
+		crd[0] -= mid[0];	crd[1] -= mid[1];
+
+		axes[0] = x1; axes[1] = y1;
+		axes[2] = x2; axes[3] = y2;
+		fromRandomAxes(&x0,&y0,axes);
+		fromRandomAxes(&x1,&y1,axes);
+		fromRandomAxes(&x2,&y2,axes);
+		fromRandomAxes(crd,crd+1,axes);
+		intoRandomAxesGrad(&f0x,&f0y,axes);
+		intoRandomAxesGrad(&f1x,&f1y,axes);
+		intoRandomAxesGrad(&f2x,&f2y,axes);
+		double	x = crd[0], y = crd[1];
+		coeff_num[0] = f0;
+		coeff_num[1] = f0y;
+		coeff_num[2] = 3*f2 - 3*f0 - 2*f0y - f2y;
+		coeff_num[3] = f2y + f0y - 2*f2 + 2*f0;
+		return coeff_num[0] + coeff_num[1]*y + coeff_num[2]*y*y + coeff_num[3]*y*y*y;
+	}
+	double	A = f1 - f0,
+		B = f2 - f0,
+		C = x*f0x + y*f0y,
+		D = (x-1)*f1x + y*f1y,
+		E = x*f2x + (y-1)*f2y;
+	double	F = C - A*x - B*y,
+		G = D - A*(x-1) - B*y,
+		H = E - A*x - B*(y-1);
+	double	I = -(F*(x+y-1) - H*y + G*x)/(2*y*(x+y-1));
+	double	J = (H - F - 2*I*y + I)/x,
+		K = -(F + I*y)/x;
+	coeff_num[0] = f0;
+	coeff_num[1] = A - K;
+	coeff_num[2] = B - I;
+	coeff_num[3] = J;
+	coeff_num[4] = K;
+	coeff_num[5] = I;
+
+	return fsq(coeff_num,crd); 
+
+//----------------quad polynom coeffs
+
+/*	coeff_num[4] = (f1x-f0x)/2;
+	coeff_num[5] = (f2y-f0y)/2;
+	coeff_num[3] = ((f2x-f0x) + (f1y-f0y))/2;
+	coeff_num[1] = f0x;
+	coeff_num[2] = f0y;
+	coeff_num[0] = (f0 + (f1-f0x-coeff_num[4]) + (f2-f0y-coeff_num[5]))/3;
+
+	return fsq(coeff_num,crd); */
+
 //----------------cubic polynom coeffs
 
-	coeff_num[0] = f0;
+/*	coeff_num[0] = f0;
 	coeff_num[1] = f0x;
 	coeff_num[2] = f0y;
 	coeff_num[3] = f1y - f0y;
@@ -279,67 +388,10 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 	coeff_num[6] = 0;
 	coeff_num[7] = f2x - f0x - f1y + f0y;
 	coeff_num[8] = 2*f0 - 2*f1 + f1x + f0x;
-	coeff_num[9] = 2*f0 - 2*f2 + f2y + f0y; */
+	coeff_num[9] = 2*f0 - 2*f2 + f2y + f0y; 
 
-	
-/*	//simplex, quad polynom coeffs; grads by OA, OB, OC
-	double 	x = crd[0], y = crd[1];
-	double 	C = x*f0x + y*f0y,
-		A = (x-1)*f1x + y*f1y,
-		B = x*f2x + (y-1)*f2y;
-	double	D = C - x*(f1-f0) - y*(f2-f0),
-		E = A - (x-1)*(f1-f0) - y*(f2-f0),
-		F = B - x*(f1-f0) - (y-1)*(f2-f0);
-	double	G = (x*(D-E) + y*(F+D) - D)/(2*x*(1-y-x)),
-		H = (E - D - (2*x-1)*G)/y,
-		I = -F - D - 2*x*G + x*H;
-	double	K = (G - H - x*coeff_num[3])/(2*y - 1);
-	double eps = 0.000001;
-	coeff_num[0] = f0;
-	if (fabs(x) < eps && fabs(y) < eps)
-		return f0;
-	else if (fabs(x-1) < eps && fabs(y) < eps)
-		return f1;
-	else if (fabs(x) < eps && fabs(y-1) < eps)
-		return f2;
-	else if (fabs(x) < eps)
-	{
-		coeff_num[4] = 0;
-		coeff_num[5] = B/(y-1) + f0 - f2;
-		coeff_num[3] = (A + f1 - f0 + coeff_num[4] - C)/y;
-		coeff_num[2] = C/y;
-		coeff_num[1] = f1 - f0 - coeff_num[4];
-		printf("%d ", 0);
-	}
-	else if (fabs(y) < eps)
-	{
-		coeff_num[5] = 0;
-		coeff_num[4] = f1 - f0 - C/x;
-		coeff_num[3] = (B + f2 - f0 - x*(f1-f0) + coeff_num[5])/x;
-		coeff_num[2] = f2 - f0 - coeff_num[5];
-		coeff_num[1] = C/x;
-		printf("%d ", 1);
-	}
-	else if (fabs(x+y-1) < eps)
-	{
-		coeff_num[3] = 0;
-		coeff_num[5] = K;
-		coeff_num[4] = (-H - K*y)/x;
-		coeff_num[2] = f2 - f0 - K;
-		coeff_num[1] = f1 - f0 + (H+K*y)/x;
-		printf("%d ", 2);
-	}
-	else
-	{
-		coeff_num[1] = f1 - f0 - G;
-		coeff_num[2] = f2 - f0 - I;
-		coeff_num[3] = I;
-		coeff_num[4] = G;
-		coeff_num[5] = H;
-		printf("%d ", 3);
-	}
+	return fcb(coeff_num,crd);
 */
-
 
 /*--------------- minmax limiter
 	double minU = nodes[0]->u[0], maxU = nodes[0]->u[0];
@@ -349,7 +401,7 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		if (nodes[i]->u[0] > maxU) maxU = nodes[i]->u[0];
 	} */
 	
-	return fsq(coeff_num,crd);
+
 }
 
 double Method::interpolate_3_order(Triangle* t, double* _crd, Mesh* mesh)
