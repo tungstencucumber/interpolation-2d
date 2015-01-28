@@ -27,7 +27,7 @@ int General::init()
 	finalStep = 200;
 	time = 0;
 	//timeStep = 0.001;
-	snapStep = 50;			//TODO:load parameters from file
+	snapStep = 5;			//TODO:load parameters from file
 	double courant = 0.5;		//lambda*tau/h
 	double h = 0.0125;
 //	double h = 0.003125;
@@ -38,7 +38,7 @@ int General::init()
 		{if (mesh->init(h)) return 1;} 		//TODO: add filepath
 	else return 1;
 	if (method = new Method())
-		{if (method->init(c0,c1, 2)) return 1;}		//TODO: when added different methods, must be chosen from xml
+		{if (method->init(c0,c1, 1)) return 1;}		//TODO: when added different methods, must be chosen from xml
 	else return 1;
 	if (sw = new VTKSnapshotWriter())
 		{if (sw->init()) return 1;}		//TODO: when added different methods, must be chosen from xml

@@ -37,6 +37,7 @@ public:
 	void randomizeAxis();
 	int local_num;
 	void setValues(double* _v);
+	int addTriangle(Triangle* t);
 	Node* nextStep;
 	Triangle* triangles[30];//tethraeders
 	int trianglesNum;//tethraeders

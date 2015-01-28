@@ -38,6 +38,7 @@ Node::Node(Node* _n)
 		axis[i]=_n->axis[i];
 	for (int i=0; i<4; i++)
 		axis_method[i]=_n->axis_method[i];
+//	if (local_num == 7) printf("C%d \n", trianglesNum);
 }
 
 Node::~Node()
@@ -61,6 +62,19 @@ void Node::setValues(double* _v)
 	if (!_v) return; 
 	for (int i=0;i<5;i++) 
 		u[i]=_v[i];
+}
+
+int Node::addTriangle(Triangle* t)
+{
+	if (!t) return 0;
+	if (trianglesNum >= 30) return 0;
+//	if (local_num == 7) printf("A%d \n", trianglesNum);
+	triangles[trianglesNum] = t;
+	trianglesNum++;
+	if (nextStep)
+		nextStep->addTriangle(t);
+//	if (local_num == 7) printf("A%d \n", trianglesNum);
+	return 1;
 }
 
 void Node::randomizeAxis()

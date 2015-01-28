@@ -415,6 +415,7 @@ void Method::count(Mesh* mesh, Node* node, double timeStep, int ax)
 	//randomizeAxis();
 	int v_n = 5;
 	Node* next = new Node(node); 	//we store new time step node in here
+	node->nextStep = next;
 	double nextValues[5]={0.0}; 	//(!)4=v_n new time step values
 	double a_r_coeff[2]={0.0}; 	//coeffs in xi-eta-teta coords (axis[])
 	double coord_char[2]={0.0}; 	//coordinates of point in old time step, where characteristic falls

@@ -155,12 +155,15 @@ Triangle* Mesh::findTriangle(double* _crd, Node* node)
 				return node->triangles[i];			
 		}
 	}
-//	printf("!!!Not found triangle in the neighbourhood crd: %lf %lf  node: %lf %lf\n",_crd[0],_crd[1],node->coords[0],node->coords[1]);
+//	if (node->local_num == 7) printf("!!!Not found triangle in the neighbourhood crd: %lf %lf  node: %lf %lf\n",_crd[0],_crd[1],node->coords[0],node->coords[1]);
+//	if (node->local_num == 7) printf("N%d ", node->local_num);
 	for (int i=0; i<nt; i++)
 		if (triangles[i])
 			if (triangles[i]->check(_crd,this))
 			{
-				//printf("!!!Thetr %i found for %lf %lf %lf------------------------\n",i,_crd[0],_crd[1],_crd[2]);
+//				if (node->local_num == 7) printf("!!!Thetr %i found for %lf %lf ----------------------\n",i,_crd[0],_crd[1]);
+				if (!node->addTriangle(triangles[i]))
+					printf("new triangle is not added!\n");
 				return triangles[i];
 			}
 	return 0;
