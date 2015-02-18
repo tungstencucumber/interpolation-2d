@@ -24,21 +24,23 @@ General::~General()
 
 int General::init()
 {
-	finalStep = 200;
+	finalStep = 131;
+	int n = 0;
 	time = 0;
 	//timeStep = 0.001;
-	snapStep = 5;			//TODO:load parameters from file
+	snapStep = 1;			//TODO:load parameters from file
 	double courant = 0.5;		//lambda*tau/h
-	double h = 0.0125;
-//	double h = 0.003125;
+	double h = 0.025;
+	for (int i=0; i<n; i++)
+		h *= 0.8;
 	double min_c = c1;
 	if (c0<c1) min_c = c0;
 	timeStep = courant*h;///min_c;//0.003125;//
 	if (mesh = new Mesh())
-		{if (mesh->init(h)) return 1;} 		//TODO: add filepath
+		{if (mesh->init(n)) return 1;} 		//TODO: add filepath
 	else return 1;
 	if (method = new Method())
-		{if (method->init(c0,c1, 1)) return 1;}		//TODO: when added different methods, must be chosen from xml
+		{if (method->init(c0,c1, 2)) return 1;}		//TODO: when added different methods, must be chosen from xml
 	else return 1;
 	if (sw = new VTKSnapshotWriter())
 		{if (sw->init()) return 1;}		//TODO: when added different methods, must be chosen from xml

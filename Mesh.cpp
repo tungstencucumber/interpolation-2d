@@ -35,9 +35,9 @@ Mesh::~Mesh()
 	}
 }
 
-int Mesh::init(double _h)
+int Mesh::init(int n)
 {
-	h = _h;
+	//h = _h;
 	/*FILE* f=fopen("mesh.node","r");
 	if (!f)
 	{
@@ -89,7 +89,7 @@ int Mesh::init(double _h)
 	else if (h == 0.0015625)
 		load_smsh_file("untitled_0.0015625.smsh");
 	else return 1; */
-	if (h == 0.0125)
+/*	if (h == 0.0125)
 		load_msh_file("untitled_0.0125.msh");
 	else if (h == 0.05)
 		load_msh_file("untitled_0.05.msh");
@@ -101,7 +101,14 @@ int Mesh::init(double _h)
 		load_msh_file("untitled_0.003125.msh");
 	else if (h == 0.0015625)
 		load_msh_file("untitled_0.0015625.msh");
-	else return 1;
+	else return 1;*/
+	char fn[20];
+	sprintf(fn, "sq_0.8_%d.msh", n);
+	printf("\n%d %s\n", n, fn);
+	h = 0.025;
+	for (int i=0; i<n; i++)
+		h *= 0.8;
+	load_msh_file(fn);
 	return 0; 
 } //TODO: add filepath
 
@@ -186,7 +193,7 @@ void Mesh::addTriangle(Triangle* newTriangle)
 	//printf("Added thetr %5d\t\n",nt);
 }
 
-int Mesh::load_smsh_file(char* file_name)
+int Mesh::load_smsh_file(const char* file_name)
 {
 	FILE* in = fopen(file_name,"r");
 	if (!in) 
@@ -244,7 +251,7 @@ int Mesh::load_smsh_file(char* file_name)
 	fclose(in);
 }
 
-int Mesh::load_msh_file(char* file_name)
+int Mesh::load_msh_file(const char* file_name)
 {
 	int fileVer;
 	string str;

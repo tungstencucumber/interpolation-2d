@@ -266,7 +266,7 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 	return a[0] + a[1]*tt + a[2]*tt*tt + a[3]*tt*tt*tt;*/
 
 
-	//to a simplex
+/*	//to a simplex
 	double 	coeff_num[10]={0.0};
 	double	x0=nodes[0]->coords[0], x1=nodes[1]->coords[0], x2=nodes[2]->coords[0], 
        		y0=nodes[0]->coords[1], y1=nodes[1]->coords[1], y2=nodes[2]->coords[1];
@@ -363,8 +363,7 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 	coeff_num[3] = J;
 	coeff_num[4] = K;
 	coeff_num[5] = I;
-
-	return fsq(coeff_num,crd); 
+	return fsq(coeff_num,crd); */
 
 //----------------quad polynom coeffs
 
@@ -401,7 +400,44 @@ double Method::interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double
 		if (nodes[i]->u[0] > maxU) maxU = nodes[i]->u[0];
 	} */
 	
-
+//----------------Hermite polynom
+	double	x1=nodes[0]->coords[0], x2=nodes[1]->coords[0], x3=nodes[2]->coords[0], 
+       		y1=nodes[0]->coords[1], y2=nodes[1]->coords[1], y3=nodes[2]->coords[1];
+        double 	f1 =nodes[0]->u[0],f2 =nodes[1]->u[0],f3 =nodes[2]->u[0],
+		f1x=nodes[0]->u[1],f2x=nodes[1]->u[1],f3x=nodes[2]->u[1],
+		f1y=nodes[0]->u[2],f2y=nodes[1]->u[2],f3y=nodes[2]->u[2],
+		x = _crd[0], y = _crd[1];
+	double	a = sqrt((x1-x2)*(x1-x2) + (y1-y2)*(y1-y2)),
+		b = sqrt((x1-x3)*(x1-x3) + (y1-y3)*(y1-y3)),
+		c = sqrt((x3-x2)*(x3-x2) + (y3-y2)*(y3-y2));
+	double	p = (a + b + c)/2;
+	double	s = sqrt(p*(p-a)*(p-b)*(p-c));
+	double	l1 = fabs(((x2*y3 - x3*y2) + (y2-y3)*x + (x3-x2)*y)/(2*s)),
+		l2 = fabs(((x3*y1 - x1*y3) + (y3-y1)*x + (x1-x3)*y)/(2*s)),
+		l3 = fabs(((x1*y2 - x2*y1) + (y1-y2)*x + (x2-x1)*y)/(2*s));
+	double	alpha1 = l1*l1*l1 + 3*l2*l1*l1 + 3*l3*l1*l1 + 3*l1*l2*l3,
+		alpha2 = l2*l2*l2 + 3*l1*l2*l2 + 3*l3*l2*l2 + 3*l1*l2*l3,
+		alpha3 = l3*l3*l3 + 3*l1*l3*l3 + 3*l2*l3*l3 + 3*l1*l2*l3;
+	double	beta1 = (x2-x1)*(l1*l1*l2 + 0.5*l1*l2*l3) + (x3-x1)*(l1*l1*l3 + 0.5*l1*l2*l3),	
+		beta2 = (x1-x2)*(l2*l2*l1 + 0.5*l1*l2*l3) + (x3-x2)*(l2*l2*l3 + 0.5*l1*l2*l3),
+		beta3 = (x1-x3)*(l3*l3*l1 + 0.5*l1*l2*l3) + (x2-x3)*(l3*l3*l2 + 0.5*l1*l2*l3);
+	double	gamma1 = (y2-y1)*(l1*l1*l2 + 0.5*l1*l2*l3) + (y3-y1)*(l1*l1*l3 + 0.5*l1*l2*l3),
+		gamma2 = (y1-y2)*(l2*l2*l1 + 0.5*l1*l2*l3) + (y3-y2)*(l2*l2*l3 + 0.5*l1*l2*l3),
+		gamma3 = (y1-y3)*(l3*l3*l1 + 0.5*l1*l2*l3) + (y2-y3)*(l3*l3*l2 + 0.5*l1*l2*l3); 
+/*	double	alpha1 = l1*l1*l1 + 3*l1*l1*(l2+l3) - 7*l1*l2*l3,
+		alpha2 = l2*l2*l2 + 3*l2*l2*(l1+l3) - 7*l1*l2*l3,
+		alpha3 = l3*l3*l3 + 3*l3*l3*(l1+l2) - 7*l1*l2*l3;
+	double	beta1 = (x2-x1)*(l1*l1*l2 - l1*l2*l3) + (x3-x1)*(l1*l1*l3 - l1*l2*l3),	
+		beta2 = (x3-x2)*(l2*l2*l1 - l1*l2*l3) + (x1-x2)*(l2*l2*l3 - l1*l2*l3),
+		beta3 = (x1-x3)*(l3*l3*l1 - l1*l2*l3) + (x2-x3)*(l3*l3*l2 - l1*l2*l3);
+	double	gamma1 = (y2-y1)*(l1*l1*l2 - l1*l2*l3) + (y3-y1)*(l1*l1*l3 - l1*l2*l3),
+		gamma2 = (y3-y2)*(l2*l2*l1 - l1*l2*l3) + (y1-y2)*(l2*l2*l3 - l1*l2*l3),
+		gamma3 = (y1-y3)*(l3*l3*l1 - l1*l2*l3) + (y2-y3)*(l3*l3*l2 - l1*l2*l3); */
+	double 	res = 	(alpha1*f1 + beta1*f1x + gamma1*f1y) +
+			(alpha2*f2 + beta2*f2x + gamma2*f2y) + 
+			(alpha3*f3 + beta3*f3x + gamma3*f3y);
+//	printf("%lf %lf   ", f3, res);
+	return res;
 }
 
 double Method::interpolate_3_order(Triangle* t, double* _crd, Mesh* mesh)

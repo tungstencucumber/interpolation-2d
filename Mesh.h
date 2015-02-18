@@ -8,15 +8,15 @@ class Mesh
 public:
 	Mesh();
 	~Mesh();
-	int init(double _h); //TODO: add filepath
+	int init(int n); //TODO: add filepath
 	int getNodesNum() {return nn;};
 	int getTrianglesNum() {return nt;};
 	Node* getNode(int num);
 	Triangle* getTriangle(int num);
 	void transcend();
 	Triangle* findTriangle(double* _crd, Node* node);
-	int load_msh_file(char* file_name);
-	int load_smsh_file(char* file_name);
+	int load_msh_file(const char* file_name);
+	int load_smsh_file(const char* file_name);
 	void addNode(Node* newNode);
 	void addTriangle(Triangle* newTriangle);
 	void setInitialConditionsLinearX(double a);
