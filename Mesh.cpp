@@ -35,7 +35,7 @@ Mesh::~Mesh()
 	}
 }
 
-int Mesh::init(int n)
+int Mesh::init(double h)
 {
 	//h = _h;
 	/*FILE* f=fopen("mesh.node","r");
@@ -103,13 +103,11 @@ int Mesh::init(int n)
 		load_msh_file("untitled_0.0015625.msh");
 	else return 1;*/
 	char fn[20];
-	sprintf(fn, "sq_0.8_%d.msh", n);
-	printf("\n%d %s\n", n, fn);
-	h = 0.025;
-	for (int i=0; i<n; i++)
-		h *= 0.8;
-	load_msh_file(fn);
-	return 0; 
+	sprintf(fn, "untitled_%.2f.msh", h);
+	//h = 0.025;
+	//for (int i=0; i<n; i++)
+	//	h *= 0.8;
+	return load_msh_file(fn);
 } //TODO: add filepath
 
 //int Mesh::getNodesNum()
@@ -263,24 +261,37 @@ int Mesh::load_msh_file(const char* file_name)
 
 	std::ifstream infile;
 	infile.open(file_name, std::ifstream::in);
-	if(!infile.is_open())	printf("Can not open msh file");
+	if(!infile.is_open())	
+    {   
+        printf("Can not open msh file %s\n", file_name);
+        return 1;
+    }
 	printf("Reading file...");
 
 	infile >> str;
 	if(strcmp(str.c_str(),"$MeshFormat") != 0)
-		printf("Wrong file format");
+    {
+	    printf("Wrong file format 0");
+        return 1;
+    }
 
 	infile >> tmp_float >> tmp_int >> tmp_int;
 	fileVer = (int)(tmp_float*10);
 
 	infile >> str;
 	if(strcmp(str.c_str(),"$EndMeshFormat") != 0)
-		printf("Wrong file format");
+    {
+		printf("Wrong file format 1");
+        return 1;
+    }
 
 	printf("INFO: Header Ok");
 	infile >> str;
 	if(strcmp(str.c_str(),"$Nodes") != 0)
-		printf("Wrong file format");
+    {
+		printf("Wrong file format 2");
+        return 1;
+    }
 
 	infile >> number_of_nodes;
 	printf("the file contains %d nodes\n", number_of_nodes);
@@ -321,20 +332,29 @@ int Mesh::load_msh_file(const char* file_name)
 			new_node->local_num = i;
 		}
 		else
-			printf("Wrong file format");
+        {
+			printf("Wrong file format 3");
+            return 1;
+        }
 		addNode(new_node);
 	}
 	printf("Finished reading nodes");
 	
 	infile >> str;
 	if(strcmp(str.c_str(),"$EndNodes") != 0)
-		printf("Wrong file format");
+    {
+		printf("Wrong file format 4");
+        return 1;
+    }
 
 	printf("INFO: Nodes Ok");
 	
 	infile >> str;
 	if(strcmp(str.c_str(),"$Elements") != 0)
-		printf("Wrong file format");
+    {
+		printf("Wrong file format 5");
+        return 1;
+    }
 
 	infile >> number_of_elements;
 	triangles = (Triangle**)malloc(sizeof(Triangle)*number_of_elements);
@@ -359,7 +379,10 @@ int Mesh::load_msh_file(const char* file_name)
 			}
 
 			if( (new_tetr_vert[0] <= 0) || (new_tetr_vert[1] <= 0) || (new_tetr_vert[2] <= 0))
-				printf("Wrong file format");
+            {
+				printf("Wrong file format 6");
+                return 1;
+            }
 
 			new_tetr_vert[0]--; new_tetr_vert[1]--; new_tetr_vert[2]--;
 			Triangle *new_tetr = new Triangle(new_tetr_vert,this);
@@ -372,7 +395,10 @@ int Mesh::load_msh_file(const char* file_name)
 
 	infile >> str;
 	if(strcmp(str.c_str(),"$EndElements") != 0)
-		printf("Wrong file format");
+    {
+		printf("Wrong file format 7");
+        return 1;
+    }
 
 	printf("File successfully read.");
 
@@ -390,7 +416,7 @@ void Mesh::setInitialConditionsStep(double a, double w)
 	{
 		if (	nodes[i]->coords[0] < half[0] + w && nodes[i]->coords[0] > half[0] - w &&
 			nodes[i]->coords[1] < half[1] + w && nodes[i]->coords[1] > half[1] - w)
-		nodes[i]->v = a;
+		nodes[i]->vx = a;
 	}
 	setInitialConditionsGradient();
 }
@@ -404,7 +430,7 @@ void Mesh::setInitialConditionsStepX(double a, double w)
 	{
 		if (	nodes[i]->coords[0] < half[0] + w && nodes[i]->coords[0] > half[0] - w 
 		   )
-		nodes[i]->v = a;
+		nodes[i]->vx = a;
 	}
 	setInitialConditionsGradient();
 }
@@ -420,7 +446,7 @@ void Mesh::setInitialConditionsStepY(double a, double w)
 			nodes[i]->coords[1] < half[1] + w && nodes[i]->coords[1] > half[1] - w 
 			//nodes[i]->coords[2] < half[2] + w && nodes[i]->coords[2] > half[2] - w)
 		   )
-		nodes[i]->v = a;
+		nodes[i]->vx = a;
 	}
 	
 	//printf ("Step initial conditios OK");
@@ -434,7 +460,7 @@ void Mesh::setInitialConditionsLinearY(double a)
 	double half = (borders[3]-borders[1])/2.0;
 	for (int i=0; i<nn; i++)
 	{
-		nodes[i]->v = a - a*(fabs(half-nodes[i]->coords[1]))/half;//fabs(half-nodes[i]->coords[0]) + fabs(half-nodes[i]->coords[1]) + 
+		nodes[i]->vx = a - a*(fabs(half-nodes[i]->coords[1]))/half;//fabs(half-nodes[i]->coords[0]) + fabs(half-nodes[i]->coords[1]) + 
 	}
 	setInitialConditionsGradient();
 }
@@ -446,7 +472,7 @@ void Mesh::setInitialConditionsLinearX(double a)
 	double half = (borders[2]-borders[0])/2.0;
 	for (int i=0; i<nn; i++)
 	{
-		nodes[i]->v = a - a*(fabs(half-nodes[i]->coords[0]))/half;//fabs(half-nodes[i]->coords[0]) + fabs(half-nodes[i]->coords[1]) + 
+		nodes[i]->vx = a - a*(fabs(half-nodes[i]->coords[0]))/half;//fabs(half-nodes[i]->coords[0]) + fabs(half-nodes[i]->coords[1]) + 
 	}
 	setInitialConditionsGradient();
 }
@@ -458,7 +484,7 @@ void Mesh::setInitialConditionsLinear(double a)
 	double half = (borders[2]-borders[0])/2.0;
 	for (int i=0; i<nn; i++)
 	{
-		nodes[i]->v = a - a*(fabs(half-nodes[i]->coords[0]) + fabs(half-nodes[i]->coords[1]))/half;//
+		nodes[i]->vx = a - a*(fabs(half-nodes[i]->coords[0]) + fabs(half-nodes[i]->coords[1]))/half;//
 	}
 	setInitialConditionsGradient();
 }
@@ -474,7 +500,9 @@ void Mesh::setInitialConditionsSin4(double x, double y, double r, double amp)
 		{
 			arg = PI*l/r/2.0;
 			l = sin(PI/2.0 + arg);
-			nodes[i]->v = amp*l*l*l*l;
+			nodes[i]->vx = amp*l*l*l*l;
+            nodes[i]->sxy = nodes[i]->vx * sqrt(0.7);
+            //nodes[i]->syy = amp*l*l*l*l;
 		}
 	}
 	setInitialConditionsGradient();	
@@ -482,6 +510,7 @@ void Mesh::setInitialConditionsSin4(double x, double y, double r, double amp)
 
 void Mesh::setInitialConditionsGradient()
 {
+/*
 	double crd[2]={0.0},gP=0.0,gM=0.0;
 	Triangle *tP=0, *tM=0;
 	for (int i=0; i<nn; i++)
@@ -506,10 +535,12 @@ void Mesh::setInitialConditionsGradient()
 		}
 	}
 	//setInitialConditionsGradientSecond();
+*/
 }
 
 void Mesh::setInitialConditionsGradientSecond()
 {
+/*
 	double crd[2]={0.0},gP=0.0,gM=0.0;
 	Triangle *tP=0, *tM=0;
 	for (int i=0; i<nn; i++)
@@ -532,5 +563,6 @@ void Mesh::setInitialConditionsGradientSecond()
 			nodes[i]->u[3+ax] = 4.0*(gP-nodes[i]->u[ax])/h;
 		}
 	}
+*/
 }
 

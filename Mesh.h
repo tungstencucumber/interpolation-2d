@@ -8,7 +8,7 @@ class Mesh
 public:
 	Mesh();
 	~Mesh();
-	int init(int n); //TODO: add filepath
+	int init(double h); //TODO: add filepath
 	int getNodesNum() {return nn;};
 	int getTrianglesNum() {return nt;};
 	Node* getNode(int num);

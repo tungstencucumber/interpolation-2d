@@ -7,7 +7,7 @@
 #define c0 1.0
 #define c1 2.0
 #define amp 10.0
-#define wdt 0.45
+#define wdt 4.5
 #define PI 3.1415926
 
 General::General()
@@ -25,30 +25,29 @@ General::~General()
 int General::init()
 {
 	finalStep = 131;
-	int n = 0;
+	//int n = 0;
 	time = 0;
 	//timeStep = 0.001;
 	snapStep = 1;			//TODO:load parameters from file
 	double courant = 0.5;		//lambda*tau/h
-	double h = 0.025;
-	for (int i=0; i<n; i++)
-		h *= 0.8;
-	double min_c = c1;
-	if (c0<c1) min_c = c0;
-	timeStep = courant*h;///min_c;//0.003125;//
+	double h = 0.25;
+	//for (int i=0; i<n; i++)
+	//	h *= 0.8;
+	//timeStep = courant*h;///min_c;//0.003125;//
 	if (mesh = new Mesh())
-		{if (mesh->init(n)) return 1;} 		//TODO: add filepath
+		{if (mesh->init(h)) return 1;} 		//TODO: add filepath
 	else return 1;
 	if (method = new Method())
-		{if (method->init(c0,c1, 2)) return 1;}		//TODO: when added different methods, must be chosen from xml
+		{if (method->init(1)) return 1;}		//TODO: when added different methods, must be chosen from xml
 	else return 1;
 	if (sw = new VTKSnapshotWriter())
 		{if (sw->init()) return 1;}		//TODO: when added different methods, must be chosen from xml
 	else return 1;
+    timeStep = courant*h*sqrt(method->rh/(method->la + 2*method->mu));
 
 	//mesh->setInitialConditionsStepY(amp, wdt);
 	//setTimeStep();
-	mesh->setInitialConditionsSin4(0.5,0.5,wdt,amp);
+	mesh->setInitialConditionsSin4(5.0,5.0,wdt,amp);
 	return 0;
 }
 
@@ -64,23 +63,40 @@ int General::step(int currentStep)
 	setTimeStep();
 	time += timeStep;
 	printf("  timestep = %lf     current time = %lf\n",timeStep,time);
-	for (int i=0; i<mesh->getNodesNum(); i++)
-	{
-		//printf("randomizing %d\n",i);
-		Node* n = mesh->getNode(i);
-		n->randomizeAxis();
-	}
-	for (int axis=0; axis<2; axis++)
-	{
+    //if (!currentStep)
+    	for (int i=0; i<mesh->getNodesNum(); i++)
+    	{
+    		//printf("randomizing %d\n",i);
+    		Node* n = mesh->getNode(i);
+    		n->randomizeAxis();
+            n->negAxis();
+    	}
+	//for (int axis=0; axis<1; axis++)
+	//{
 		//printf("counting axis %d\n",axis);
 		for (int i=0; i<mesh->getNodesNum(); i++)
 		{
 			Node* n = mesh->getNode(i);
-			method->count(mesh, n, timeStep, axis);
+            double t;
+            //if (axis)
+            //{
+                t = n->axis[0]; n->axis[0] = n->axis[2]; n->axis[2] = t;
+                t = n->axis[1]; n->axis[1] = n->axis[3]; n->axis[3] = t;
+                n->negAxis();
+            //}
+			method->count_split(mesh, n, timeStep);
+            //if (axis)
+            //{
+                t = n->axis[0]; n->axis[0] = n->axis[2]; n->axis[2] = t;
+                t = n->axis[1]; n->axis[1] = n->axis[3]; n->axis[3] = t;
+                n->negAxis();
+            //}
 		}
 		mesh->transcend();
 		//printf("counted axis %d\n",axis);
-	}
+	//}
+
+
 	if (!((currentStep+1)%snapStep)) //L1 for stepY
 	{
 		double f=0, diffL1=0, diffL2=0, _x=0, _y = 0, top=0, dwn=0, dh=0, l,diffL0=0,maxdiff;
@@ -112,6 +128,7 @@ int General::step(int currentStep)
 		diffL2 = sqrt(diffL2/(double)mesh->getNodesNum());
 		printf("diff L0 = %lf\t\tdiff L1 = %lf\t\tdiff L2 = %lf\n", diffL0, diffL1, diffL2);
 	}
+
 	if (!((currentStep+1)%snapStep))
 		sw->dump_vtk(mesh,currentStep+1);
 	

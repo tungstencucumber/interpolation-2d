@@ -90,11 +90,11 @@ int VTKSnapshotWriter::dump_vtk (string filename, Mesh* tetr_mesh, int snap_num)
 	Triangle *tetr;
 
 	vtkPoints *pts = vtkPoints::New();
-	vtkDoubleArray *v = vtkDoubleArray::New();
-	vtkDoubleArray *gx = vtkDoubleArray::New();
-	vtkDoubleArray *gy = vtkDoubleArray::New();
-	vtkDoubleArray *x = vtkDoubleArray::New();
-	vtkDoubleArray *y = vtkDoubleArray::New();
+	vtkDoubleArray *vx = vtkDoubleArray::New();
+	vtkDoubleArray *vy = vtkDoubleArray::New();
+	vtkDoubleArray *sxx = vtkDoubleArray::New();
+	vtkDoubleArray *sxy = vtkDoubleArray::New();
+	vtkDoubleArray *syy = vtkDoubleArray::New();
 	vtkDoubleArray *axis_0 = vtkDoubleArray::New();
 	vtkDoubleArray *axis_1 = vtkDoubleArray::New();
 	//vtkDoubleArray *ggv = vtkDoubleArray::New();
@@ -142,14 +142,14 @@ int VTKSnapshotWriter::dump_vtk (string filename, Mesh* tetr_mesh, int snap_num)
 		node = tetr_mesh->getNode(i);
 		//printf("%lf %lf %lf %lf\n",node->u[0],node->u[1],node->u[2],node->u[3]);
 		pts->InsertNextPoint( node->coords[0], node->coords[1], 0.0 );
-		v->InsertNextValue( node->u[0] );
-		gx->InsertNextValue( node->u[1] );
-		gy->InsertNextValue( node->u[2] );
-		x->InsertNextValue( node->coords[0] );
-		y->InsertNextValue( node->coords[1] );
-		vec[0] = node->axis_method[0];	vec[1] = node->axis_method[1];	vec[2] = 0.0;
+		vx->InsertNextValue( node->u[0] );
+		vy->InsertNextValue( node->u[1] );
+		sxx->InsertNextValue( node->u[2] );
+		sxy->InsertNextValue( node->u[3] );
+		syy->InsertNextValue( node->u[4] );
+		vec[0] = node->axis[0];	vec[1] = node->axis[1];	vec[2] = 0.0;
 		axis_0->InsertNextTuple(vec);
-		vec0[0] = node->axis_method[2]; vec0[1] = node->axis_method[3]; vec0[2] = 0.0;
+		vec0[0] = node->axis[2]; vec0[1] = node->axis[3]; vec0[2] = 0.0;
 		axis_1->InsertNextTuple(vec0);
 
 		/*sxx->InsertNextValue( node.values[3] );
@@ -189,11 +189,11 @@ int VTKSnapshotWriter::dump_vtk (string filename, Mesh* tetr_mesh, int snap_num)
 		g->InsertNextCell(tetra->GetCellType(),tetra->GetPointIds());
 	}
 
-	v->SetName("v");
-	gx->SetName("gx");
-	gy->SetName("gy");
-	x->SetName("x");
-	y->SetName("y");
+	vx->SetName("vx");
+	vy->SetName("vy");
+	sxx->SetName("sxx");
+	sxy->SetName("sxy");
+	syy->SetName("syy");
 	//gv->SetName("grad v");
 	/*sxx->SetName("sxx");
 	sxy->SetName("sxy");
@@ -222,11 +222,11 @@ int VTKSnapshotWriter::dump_vtk (string filename, Mesh* tetr_mesh, int snap_num)
 	maxDeformation->SetName("maxDeformation");*/
 
 	g->GetPointData()->SetVectors(axis_0);
-	g->GetPointData()->AddArray(v);
-	g->GetPointData()->AddArray(gx);
-	g->GetPointData()->AddArray(gy);
-	g->GetPointData()->AddArray(x);
-	g->GetPointData()->AddArray(y);
+	g->GetPointData()->AddArray(vx);
+	g->GetPointData()->AddArray(vy);
+	g->GetPointData()->AddArray(sxx);
+	g->GetPointData()->AddArray(sxy);
+	g->GetPointData()->AddArray(syy);
 	//g->GetPointData()->SetVectors(axis_1);
 	//g->GetPointData()->SetVectors(gv);
 	/*g->GetPointData()->AddArray(sxx);
@@ -255,11 +255,11 @@ int VTKSnapshotWriter::dump_vtk (string filename, Mesh* tetr_mesh, int snap_num)
 	g->GetPointData()->AddArray(maxDeviatorHist);
 	g->GetPointData()->AddArray(maxDeformation);*/
 
-	v->Delete();
-	gx->Delete();
-	gy->Delete();
-	x->Delete();
-	y->Delete();
+	vx->Delete();
+	vy->Delete();
+	sxx->Delete();
+	sxy->Delete();
+	syy->Delete();
 	axis_0->Delete();
 	axis_1->Delete();
 	//ggv->Delete();
@@ -291,7 +291,7 @@ int VTKSnapshotWriter::dump_vtk (string filename, Mesh* tetr_mesh, int snap_num)
 
 	//*logger << "Dumping VTK snapshot to file " < filename;
 
-	xgw->SetInput(g);
+	xgw->SetInputData(g);
 	xgw->SetFileName(filename.c_str());
 	xgw->Update();
 

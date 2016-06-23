@@ -7,11 +7,73 @@
 #include <stdlib.h>
 #include <cstring>
 #include <stdio.h>
+#include <iostream>
 #define R_I 1000000
 #define R_D 1000000.0
+using std::cout;
+using std::endl;
 
 Method::Method()
 {
+    la = 1.0;
+    mu = 0.7;
+    rh = 1.0;
+    c[0] = sqrt((la+2*mu)/rh);
+    c[1] = sqrt(mu/rh);
+    c[2] = 0;
+    c[3] = - sqrt(mu/rh);
+    c[4] = - sqrt((la+2*mu)/rh);
+    om[0][0] = 1; 
+    om[0][1] = 0;
+    om[0][2] = 0;
+    om[0][3] = 0;
+    om[0][4] = - om[0][0];
+    om[1][0] = 0;
+    om[1][1] = 1;
+    om[1][2] = 0;
+    om[1][3] = 1;
+    om[1][4] = 0;
+    om[2][0] = sqrt(rh*(la+2*mu));
+    om[2][1] = 0;
+    om[2][2] = 0;
+    om[2][3] = 0;
+    om[2][4] = -om[2][0];
+    om[3][0] = 0;
+    om[3][1] = sqrt(rh*mu);
+    om[3][2] = 0;
+    om[3][3] = -om[3][1];
+    om[3][4] = 0;
+    om[4][0] = la*sqrt(rh/(la+2*mu));
+    om[4][1] = 0;
+    om[4][2] = 1;
+    om[4][3] = 0;
+    om[4][4] = -om[4][0];
+
+    om_neg[0][0] = 0.5;
+    om_neg[0][1] = 0;
+    om_neg[0][2] = 1/(2*sqrt(rh*(la+2*mu)));
+    om_neg[0][3] = 0;
+    om_neg[0][4] = 0;
+    om_neg[1][0] = 0;
+    om_neg[1][1] = 0.5;
+    om_neg[1][2] = 0;
+    om_neg[1][3] = 1/(2*sqrt(rh*mu));
+    om_neg[1][4] = 0;
+    om_neg[2][0] = 0;
+    om_neg[2][1] = 0;
+    om_neg[2][2] = - la/(la+2*mu);
+    om_neg[2][3] = 0;
+    om_neg[2][4] = 1;
+    om_neg[3][0] = 0;
+    om_neg[3][1] = 0.5;
+    om_neg[3][2] = 0;
+    om_neg[3][3] = -1/(2*sqrt(rh*mu));
+    om_neg[3][4] = 0;
+    om_neg[4][0] = 0.5;
+    om_neg[4][1] = 0;
+    om_neg[4][2] = -1/(2*sqrt(rh*(la+2*mu)));
+    om_neg[4][3] = 0;
+    om_neg[4][4] = 0;
 }
 
 Method::~Method()
@@ -21,16 +83,16 @@ Method::~Method()
 int Method::init()
 {
 	srand(time(0));
-	coeff[0] = coeff[1] = 0.2;
-	coeff[1] = 0.53;
+	//coeff[0] = coeff[1] = 0.2;
+	//coeff[1] = 0.53;
 	order = 1;
 	return 0;
 }
 
-int Method::init(double c0, double c1, int _order)
+int Method::init(int _order)
 {
-	srand(time(0));
-	coeff[0] = c0; coeff[1] = c1;
+	//srand(time(0));
+	//coeff[0] = c0; coeff[1] = c1;
 	order = _order;
 	return 0;
 }
@@ -85,8 +147,8 @@ void Method::randomizeAxis(double* axes)
 
 void Method::calculateCoeff(double* _c, double* axes)
 {
-	_c[0] = coeff[0]*axes[0] + coeff[1]*axes[1];
-	_c[1] = coeff[0]*axes[2] + coeff[1]*axes[3];
+	//_c[0] = coeff[0]*axes[0] + coeff[1]*axes[1];
+	//_c[1] = coeff[0]*axes[2] + coeff[1]*axes[3];
 }
 
 double Method::interpolate_1_order(Triangle* t, double* _crd, int val, Mesh* mesh)
@@ -95,8 +157,14 @@ double Method::interpolate_1_order(Triangle* t, double* _crd, int val, Mesh* mes
 	double 	x0=nodes[0]->coords[0], x1=nodes[1]->coords[0], x2=nodes[2]->coords[0], //
        		y0=nodes[0]->coords[1], y1=nodes[1]->coords[1], y2=nodes[2]->coords[1],   //
        		a,b,c;
-                                                   
-        double f0=nodes[0]->u[val],f1=nodes[1]->u[val],f2=nodes[2]->u[val]; 
+    double f0 = 0, f1 = 0, f2 = 0;
+    for (int i=0; i<5; i++)
+    {
+        f0 += om_neg[val][i]*nodes[0]->u[i];
+        f1 += om_neg[val][i]*nodes[1]->u[i];
+        f2 += om_neg[val][i]*nodes[2]->u[i];
+    }
+
 	double znam = x1*y0-x2*y0-x0*y1+x2*y1+x0*y2-x1*y2;
 	
     	if (fabs(znam) < 0.000001) 
@@ -172,6 +240,22 @@ void Method::intoRandomAxes(double* x, double* y, double *axes)
 			(*x)*axes[2]+(*y)*axes[3]};
 	*x=c[0];*y=c[1];
 }
+
+void Method::intoAxes(Node* n, double* axis)
+{
+    if (!n) return;
+    double vx = n->vx, vy = n->vy, sxx = n->sxx, sxy = n->sxy, syy = n->syy;
+    n->vx = vx*axis[0] + vy*axis[1];
+    n->vy = vx*axis[2] + vy*axis[3];
+    n->sxx =    axis[0]*axis[0]*sxx + axis[0]*axis[2]*sxy + 
+                axis[0]*axis[1]*sxy + axis[1]*axis[2]*syy;
+    n->sxy =    axis[0]*axis[1]*sxx + axis[0]*axis[3]*sxy +
+                axis[1]*axis[1]*sxy + axis[1]*axis[3]*syy;
+    n->syy =    axis[1]*axis[2]*sxx + axis[2]*axis[3]*sxy +
+                axis[1]*axis[3]*sxy + axis[3]*axis[3]*syy;
+}
+
+
 void Method::intoRandomAxesGrad(double* x, double* y, double *a)
 { 
 	double _x = *x, _y = *y, det = a[2]*a[1] - a[0]*a[3];
@@ -446,36 +530,49 @@ double Method::interpolate_3_order(Triangle* t, double* _crd, Mesh* mesh)
 }
 
 
-void Method::count(Mesh* mesh, Node* node, double timeStep, int ax)
+void Method::count_split(Mesh* mesh, Node* node, double timeStep)
 {
 	//randomizeAxis();
 	int v_n = 5;
 	Node* next = new Node(node); 	//we store new time step node in here
-	node->nextStep = next;
+	//node->nextStep = next;
 	double nextValues[5]={0.0}; 	//(!)4=v_n new time step values
-	double a_r_coeff[2]={0.0}; 	//coeffs in xi-eta-teta coords (axis[])
+	//double a_r_coeff[2]={0.0}; 	//coeffs in xi-eta-teta coords (axis[])
 	double coord_char[2]={0.0}; 	//coordinates of point in old time step, where characteristic falls
+    double riem;
 	Triangle* t = 0;		//thetr for interpolation
-	calculateCoeff(a_r_coeff,node->axis); 	//transform coefficients into random axes basis
 
-		for (int i_crd=0; i_crd<2; i_crd++) //finding where characteristic for ax-th axis falls
-			coord_char[i_crd] = node->coords[i_crd] - a_r_coeff[ax]*node->axis[2*ax+i_crd]*timeStep;
+    intoAxes(node, node->axis);
+
+    for (int ci = 0; ci<5; ci++)
+    {
+		for (int i_crd=0; i_crd<2; i_crd++) 
+			coord_char[i_crd] = node->coords[i_crd] - c[ci]*node->axis[i_crd]*timeStep;
 		t = mesh->findTriangle(coord_char,node);
-		if (!t) {printf("Fail! No thetr found for %lf %lf\n",coord_char[0],coord_char[1]); return;};
-		if (order == 1)
-		{
-			nextValues[0] = interpolate_1_order(t, coord_char, 0, mesh); 
-			nextValues[1] = interpolate_1_order(t, coord_char, 1, mesh); 
-			nextValues[2] = interpolate_1_order(t, coord_char, 2, mesh);
-		}
-		else if (order == 2)
-		{
-			nextValues[1] = interpolate_1_order(t, coord_char, 1, mesh); 
-			nextValues[2] = interpolate_1_order(t, coord_char, 2, mesh);
-			nextValues[0] = interpolate_2_order(t, coord_char, mesh, NULL);//, next); 
-		}
-		else if (order == 3)
-			nextValues[0] = interpolate_3_order(t, coord_char, mesh); 
+        if (!t) {printf("Fail! No thetr found for %lf %lf\n",coord_char[0],coord_char[1]); return;};
+
+        for (int i=0; i<3; i++)
+        {
+            Node* tn = mesh->getNode(t->vert[i]);
+            intoAxes(tn, node->axis);
+        }
+	
+        riem = interpolate_1_order(t, coord_char, ci, mesh);
+        //if (riem == riem ) cout <<" r "<<riem;
+        for (int i=0; i<5; i++)
+		    nextValues[i] += om[i][ci]*riem; 
+
+        for (int i=0; i<3; i++)
+        {
+            Node* tn = mesh->getNode(t->vert[i]);
+            intoAxes(tn, node->axis_neg);
+        }
+    }
+
+    intoAxes(node, node->axis_neg);
+
 	next->setValues(nextValues);	//copy new time step values into new time step node
+    intoAxes(next, node->axis_neg);
+
 	node->nextStep = next;		//add link from old node to the new one
 }

@@ -1,7 +1,7 @@
 #ifndef _GCM_VTK_SNAPSHOT_WRITER_H
 #define _GCM_VTK_SNAPSHOT_WRITER_H  1
 
-#include <string>
+#include "string"
 #include <vector>
 #include <fstream>
 #include <sstream>
@@ -22,7 +22,7 @@ using std::stringstream;
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
 #include <vtkPointData.h>
-#include <vtkstd/string>
+//#include <vtkstd/string>
 
 //#include "../meshtypes/TetrMesh_1stOrder.h"
 #include "Mesh.h"

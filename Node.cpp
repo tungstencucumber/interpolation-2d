@@ -4,9 +4,12 @@
 #include <stdlib.h>
 #include <cstring>
 #include <stdio.h>
+#include <iostream>
 #define R_I 1000000
 #define R_D 1000000.0
 
+using std::cout;
+using std::endl;
 
 Node::Node()
 {
@@ -36,8 +39,11 @@ Node::Node(Node* _n)
 		triangles[i]=_n->triangles[i];
 	for (int i=0; i<4; i++)
 		axis[i]=_n->axis[i];
-	for (int i=0; i<4; i++)
-		axis_method[i]=_n->axis_method[i];
+    for (int i=0; i<4; i++)
+        axis_neg[i]=_n->axis_neg[i];
+
+	//for (int i=0; i<4; i++)
+	//	axis_method[i]=_n->axis_method[i];
 //	if (local_num == 7) printf("C%d \n", trianglesNum);
 }
 
@@ -79,9 +85,9 @@ int Node::addTriangle(Triangle* t)
 
 void Node::randomizeAxis()
 {
-	for (int i=0; i<4; i++)
-		axis[i]= sqrt(2.0)/2.0;//0.0;//
-	axis[3] = -sqrt(2.0)/2.0;
+	//for (int i=0; i<4; i++)
+	//	axis[i]= sqrt(2.0)/2.0;//0.0;//
+	//axis[3] = -sqrt(2.0)/2.0;
 	axis[1] = axis[2] = 0.0; 
 	axis[3] = axis[0] = 1.0; 
 	return;
@@ -120,3 +126,20 @@ void Node::randomizeAxis()
 		return;
 	}
 }
+    
+
+void Node::negAxis()
+{
+    double d = axis[3]*axis[0] - axis[1]*axis[2];
+    axis_neg[0] = axis[3]/d;
+    axis_neg[1] = -axis[1]/d;
+    axis_neg[2] = -axis[2]/d;
+    axis_neg[3] = axis[0]/d;
+}
+
+
+void Node::print_axes() 
+{   
+    cout <<endl<<"axes node "<<local_num<<" are "<<axis[0] <<" "<<axis[1] <<" "<<axis[2] <<" "<<axis[3] <<" ";
+}
+

@@ -37,12 +37,17 @@ find_package (VTK REQUIRED)
 if (VTK_FOUND)
 	message(STATUS "VTK found")
 	include_directories(${VTK_INCLUDE_DIRS})
-	set(LINK_LIBRARIES vtkCommon vtkFiltering vtkIO)
 endif (VTK_FOUND)
+
+find_package(MPI REQUIRED)
+include_directories(${MPI_CXX_INCLUDE_PATH})
 
 
 set(LINK_LIBRARIES ${LINK_LIBRARIES} m)
-set(LINK_LIBRARIES ${LINK_LIBRARIES} gmsh)
+
 
 target_link_libraries (${PROJECT} ${LINK_LIBRARIES})
 target_link_libraries (${PROJECT}-profile ${LINK_LIBRARIES})
+
+target_link_libraries(${PROJECT} ${MPI_CXX_LIBRARIES})
+target_link_libraries(${PROJECT} ${VTK_LIBRARIES})

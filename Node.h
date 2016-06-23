@@ -25,16 +25,18 @@ public:
 		double u[5];
 		struct 
 		{
-			double v;
 			double vx;
 			double vy;
-			double vxx;
-			double vyy;
+			double sxx;
+			double sxy;
+			double syy;
 		};
 	};
 	double axis[4];
-	double axis_method[4];
+	double axis_neg[4];
+    void print_axes();
 	void randomizeAxis();
+    void negAxis();
 	int local_num;
 	void setValues(double* _v);
 	int addTriangle(Triangle* t);

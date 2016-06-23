@@ -10,18 +10,18 @@ public:
 	Method();
 	~Method();
 	int init();
-	int init(double c0, double c1, int _order);
-	void count(Mesh* mesh, Node* n, double timeStep, int axis);
+	int init(int _order);
+	void count_split(Mesh* mesh, Node* n, double timeStep);
+    double la, mu, rh, c[5];
 
 	static double scalar(double* _v1, double* _v2);
 	static double scalar(double _x0, double _y0, double _x1, double _y1);
-	static double interpolate_1_order(Triangle* t, double* _crd, int val, Mesh* mesh); 
-	static double interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double* _res);//, Node* node); 
-	static double interpolate_3_order(Triangle* t, double* _crd, Mesh* mesh); 
+	double interpolate_1_order(Triangle* t, double* _crd, int val, Mesh* mesh); 
+	double interpolate_2_order(Triangle* t, double* _crd, Mesh* mesh, double* _res);//, Node* node); 
+	double interpolate_3_order(Triangle* t, double* _crd, Mesh* mesh); 
 private:
-	//static double axis[4]; 	// current local randomised axis
-	double coeff[2]; 	// dv/dt + coeff[0]*dv/dx + coeff[1]*dv/vy = 0
-			 	// coeffs in global coordinates
+
+    double om_neg[5][5], om[5][5];
 	int order;
 	static void randomizeAxis(double* axes);
 	void calculateCoeff(double* _c, double* axis); //transform coordinates in accordance with axis[]
@@ -35,5 +35,6 @@ private:
 	static void intoRandomAxesGrad(double* x, double* y, double *axes);
 //	static void intoRandomAxesGrad(double* c, double *axes);
 	static void fromRandomAxes(double* c, double *axes);
+    static void intoAxes(Node* n, double* axis);
 };
 #endif
