@@ -500,9 +500,12 @@ void Mesh::setInitialConditionsSin4(double x, double y, double r, double amp)
 		{
 			arg = PI*l/r/2.0;
 			l = sin(PI/2.0 + arg);
-			nodes[i]->vx = amp*l*l*l*l;
-            nodes[i]->sxy = nodes[i]->vx * sqrt(0.7);
-            //nodes[i]->syy = amp*l*l*l*l;
+                        //nodes[i]->vx = amp*l*l*l*l * 1.0;//sqrt(0.7);
+			//nodes[i]->vy = amp*l*l*l*l;
+            		//nodes[i]->sxx = -amp*l*l*l*l / sqrt(2.4);
+                        //nodes[i]->sxy = amp*l*l*l*l*sqrt(0.7);
+                        //nodes[i]->syy = -amp*l*l*l*l * sqrt(2.4);
+            		nodes[i]->sxx = nodes[i]->syy = amp*l*l*l*l;
 		}
 	}
 	setInitialConditionsGradient();	

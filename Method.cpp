@@ -27,7 +27,7 @@ Method::Method()
     om[0][1] = 0;
     om[0][2] = 0;
     om[0][3] = 0;
-    om[0][4] = - om[0][0];
+    om[0][4] = 1;
     om[1][0] = 0;
     om[1][1] = 1;
     om[1][2] = 0;
@@ -541,38 +541,45 @@ void Method::count_split(Mesh* mesh, Node* node, double timeStep)
 	double coord_char[2]={0.0}; 	//coordinates of point in old time step, where characteristic falls
     double riem;
 	Triangle* t = 0;		//thetr for interpolation
-
-    intoAxes(node, node->axis);
+    //printf("before: %lf %lf %lf %lf %lf\n", node->vx, node->vy, node->sxx, node->sxy, node->syy);
+    intoAxes(node, node->axis_neg);
+    //printf("init:  %lf %lf %lf %lf %lf\n", node->vx, node->vy, node->sxx, node->sxy, node->syy);
+    //printf("axis %lf %lf %lf %lf  axis_neg %lf %lf %lf %lf\n", node->axis[0], node->axis[1], node->axis[2], node->axis[3], node->axis_neg[0], node->axis_neg[1], node->axis_neg[2], node->axis_neg[3]);
 
     for (int ci = 0; ci<5; ci++)
     {
-		for (int i_crd=0; i_crd<2; i_crd++) 
-			coord_char[i_crd] = node->coords[i_crd] - c[ci]*node->axis[i_crd]*timeStep;
-		t = mesh->findTriangle(coord_char,node);
+	//printf("before: %lf %lf  c: %lf  ts: %lf\n", node->coords[0], node->coords[1], c[ci], timeStep);
+	for (int i_crd=0; i_crd<2; i_crd++) 
+		coord_char[i_crd] = node->coords[i_crd] - c[ci]*node->axis[i_crd]*timeStep;
+        //printf("coords:  %lf %lf\n", coord_char[0], coord_char[1]);
+	t = mesh->findTriangle(coord_char,node);
         if (!t) {printf("Fail! No thetr found for %lf %lf\n",coord_char[0],coord_char[1]); return;};
 
         for (int i=0; i<3; i++)
         {
             Node* tn = mesh->getNode(t->vert[i]);
-            intoAxes(tn, node->axis);
+	    //printf("triangle bef: %d %lf %lf %lf %lf %lf\n", i, tn->vx, tn->vy, tn->sxx, tn->sxy, tn->syy);
+            if (tn != node) intoAxes(tn, node->axis_neg);
+    	    //printf("triangle aft: %d %lf %lf %lf %lf %lf\n", i, tn->vx, tn->vy, tn->sxx, tn->sxy, tn->syy);
         }
-	
         riem = interpolate_1_order(t, coord_char, ci, mesh);
+        //printf("riem: %d %lf\n", ci, riem);
         //if (riem == riem ) cout <<" r "<<riem;
         for (int i=0; i<5; i++)
 		    nextValues[i] += om[i][ci]*riem; 
+        //printf("next:  %lf %lf %lf %lf %lf\n", nextValues[0], nextValues[1], nextValues[2], nextValues[3], nextValues[4]);
 
         for (int i=0; i<3; i++)
         {
             Node* tn = mesh->getNode(t->vert[i]);
-            intoAxes(tn, node->axis_neg);
+            if (tn != node) intoAxes(tn, node->axis);
         }
     }
-
-    intoAxes(node, node->axis_neg);
-
-	next->setValues(nextValues);	//copy new time step values into new time step node
-    intoAxes(next, node->axis_neg);
-
-	node->nextStep = next;		//add link from old node to the new one
+    //printf("\n");
+    //printf("before: %lf %lf %lf %lf %lf\n", node->vx, node->vy, node->sxx, node->sxy, node->syy);
+    intoAxes(node, node->axis);
+    //printf("after:  %lf %lf %lf %lf %lf\n\n", node->vx, node->vy, node->sxx, node->sxy, node->syy);
+    next->setValues(nextValues);	//copy new time step values into new time step node
+    intoAxes(next, node->axis);
+    node->nextStep = next;		//add link from old node to the new one
 }

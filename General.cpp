@@ -71,30 +71,30 @@ int General::step(int currentStep)
     		n->randomizeAxis();
             n->negAxis();
     	}
-	//for (int axis=0; axis<1; axis++)
-	//{
+	for (int axis=0; axis<2; axis++)
+	{
 		//printf("counting axis %d\n",axis);
 		for (int i=0; i<mesh->getNodesNum(); i++)
 		{
 			Node* n = mesh->getNode(i);
             double t;
-            //if (axis)
-            //{
+            if (axis)
+            {
                 t = n->axis[0]; n->axis[0] = n->axis[2]; n->axis[2] = t;
                 t = n->axis[1]; n->axis[1] = n->axis[3]; n->axis[3] = t;
                 n->negAxis();
-            //}
+            }
 			method->count_split(mesh, n, timeStep);
-            //if (axis)
-            //{
+            if (axis)
+            {
                 t = n->axis[0]; n->axis[0] = n->axis[2]; n->axis[2] = t;
                 t = n->axis[1]; n->axis[1] = n->axis[3]; n->axis[3] = t;
                 n->negAxis();
-            //}
+            }
 		}
 		mesh->transcend();
 		//printf("counted axis %d\n",axis);
-	//}
+	}
 
 
 	if (!((currentStep+1)%snapStep)) //L1 for stepY
