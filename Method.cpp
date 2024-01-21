@@ -548,32 +548,32 @@ void Method::count_split(Mesh* mesh, Node* node, double timeStep)
 
     for (int ci = 0; ci<5; ci++)
     {
-	//printf("before: %lf %lf  c: %lf  ts: %lf\n", node->coords[0], node->coords[1], c[ci], timeStep);
-	for (int i_crd=0; i_crd<2; i_crd++) 
-		coord_char[i_crd] = node->coords[i_crd] - c[ci]*node->axis[i_crd]*timeStep;
-        //printf("coords:  %lf %lf\n", coord_char[0], coord_char[1]);
-	t = mesh->findTriangle(coord_char,node);
-        if (!t) {printf("Fail! No thetr found for %lf %lf\n",coord_char[0],coord_char[1]); return;};
+		//printf("before: %lf %lf  c: %lf  ts: %lf\n", node->coords[0], node->coords[1], c[ci], timeStep);
+		for (int i_crd=0; i_crd<2; i_crd++) 
+			coord_char[i_crd] = node->coords[i_crd] - c[ci]*node->axis[i_crd]*timeStep;
+			//printf("coords:  %lf %lf\n", coord_char[0], coord_char[1]);
+		t = mesh->findTriangle(coord_char,node);
+		if (!t) {printf("Fail! No thetr found for %lf %lf\n",coord_char[0],coord_char[1]); return;};
 
-        for (int i=0; i<3; i++)
-        {
-            Node* tn = mesh->getNode(t->vert[i]);
-	    //printf("triangle bef: %d %lf %lf %lf %lf %lf\n", i, tn->vx, tn->vy, tn->sxx, tn->sxy, tn->syy);
-            if (tn != node) intoAxes(tn, node->axis_neg);
-    	    //printf("triangle aft: %d %lf %lf %lf %lf %lf\n", i, tn->vx, tn->vy, tn->sxx, tn->sxy, tn->syy);
-        }
-        riem = interpolate_1_order(t, coord_char, ci, mesh);
-        //printf("riem: %d %lf\n", ci, riem);
-        //if (riem == riem ) cout <<" r "<<riem;
-        for (int i=0; i<5; i++)
-		    nextValues[i] += om[i][ci]*riem; 
-        //printf("next:  %lf %lf %lf %lf %lf\n", nextValues[0], nextValues[1], nextValues[2], nextValues[3], nextValues[4]);
+		for (int i=0; i<3; i++)
+		{
+			Node* tn = mesh->getNode(t->vert[i]);
+		//printf("triangle bef: %d %lf %lf %lf %lf %lf\n", i, tn->vx, tn->vy, tn->sxx, tn->sxy, tn->syy);
+			if (tn != node) intoAxes(tn, node->axis_neg);
+			//printf("triangle aft: %d %lf %lf %lf %lf %lf\n", i, tn->vx, tn->vy, tn->sxx, tn->sxy, tn->syy);
+		}
+		riem = interpolate_1_order(t, coord_char, ci, mesh);
+		//printf("riem: %d %lf\n", ci, riem);
+		//if (riem == riem ) cout <<" r "<<riem;
+		for (int i=0; i<5; i++)
+			nextValues[i] += om[i][ci]*riem; 
+		//printf("next:  %lf %lf %lf %lf %lf\n", nextValues[0], nextValues[1], nextValues[2], nextValues[3], nextValues[4]);
 
-        for (int i=0; i<3; i++)
-        {
-            Node* tn = mesh->getNode(t->vert[i]);
-            if (tn != node) intoAxes(tn, node->axis);
-        }
+		for (int i=0; i<3; i++)
+		{
+			Node* tn = mesh->getNode(t->vert[i]);
+			if (tn != node) intoAxes(tn, node->axis);
+		}
     }
     //printf("\n");
     //printf("before: %lf %lf %lf %lf %lf\n", node->vx, node->vy, node->sxx, node->sxy, node->syy);
